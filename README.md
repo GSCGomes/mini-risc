@@ -1,2 +1,2 @@
 # mini-risc
-To Do
+Simple RISC processor
