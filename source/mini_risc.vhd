@@ -25,7 +25,8 @@ architecture arch of mini_risc is
 	
 	-- miscellaneous relevant signals	
 	signal PC, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
-	
+
+	signal Control : std_logic_vector(9 downto 0); 	
 	signal Inst : std_logic_vector(31 downto 0);
 	
 	signal R1_data, R2_data, MemOut, WriteBack, Imm : std_logic_vector(31 downto 0);
@@ -41,7 +42,6 @@ architecture arch of mini_risc is
 			  dado_sai               : out std_logic_vector((largura_dado - 1) downto 0)
 		 );
 	end component;
-	
 	component mux41 is
 		 generic (
 			  largura_dado : natural := 12
@@ -53,15 +53,16 @@ architecture arch of mini_risc is
 		 );
 	end component;
 	component registrador is
-    generic (
-        largura_dado : natural := 12
-    );
-    port (
-        entrada_dados  : in std_logic_vector((largura_dado - 1) downto 0);
-        WE, clk, reset : in std_logic;
-        saida_dados    : out std_logic_vector((largura_dado - 1) downto 0)
-    );
-	end component;
+		generic (
+			largura_dado : natural := 12
+		);
+		port (
+			entrada_dados  : in std_logic_vector((largura_dado - 1) downto 0);
+			WE, clk, reset : in std_logic;
+			saida_dados    : out std_logic_vector((largura_dado - 1) downto 0)
+		);
+		end component;
+
 	component somador is
 		generic (
 			largura_dado : natural := 12
@@ -74,16 +75,16 @@ architecture arch of mini_risc is
 		);
 	end component;
 	component memi is
-	generic (
-		INSTR_WIDTH   : natural := 32; -- tamanho da instrucaoo em numero de bits
-		MI_ADDR_WIDTH : natural := 12  -- tamanho do endereco da memoria de instrucoes em numero de bits
-	);
-	port (
-		clk       : in std_logic;
-		reset     : in std_logic;
-		Endereco  : in std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
-		Instrucao : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
-	);
+		generic (
+			INSTR_WIDTH   : natural := 32; -- tamanho da instrucaoo em numero de bits
+			MI_ADDR_WIDTH : natural := 12  -- tamanho do endereco da memoria de instrucoes em numero de bits
+		);
+		port (
+			clk       : in std_logic;
+			reset     : in std_logic;
+			Endereco  : in std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
+			Instrucao : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
+		);
 	end component;
 	component banco_registradores is
 		 generic (
@@ -151,8 +152,34 @@ architecture arch of mini_risc is
 			  read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0)
 		 );
 	end component;
+
+	-- unidade de controle
+	component unidade_de_controle_ciclo_unico is
+		generic (
+			INSTR_WIDTH       : natural := 32;
+			OPCODE_WIDTH      : natural := 4;
+			DP_CTRL_BUS_WIDTH : natural := 9;
+			ULA_CTRL_WIDTH    : natural := 4
+		);
+		port (
+			instrucao : in std_logic_vector(INSTR_WIDTH - 1 downto 0);       -- instrução
+			controle  : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0) -- controle da via
+		);
+	end component;
+	
+
+
 	
 	begin
+
+	u_controler : unidade_de_controle_ciclo_unico port map(Inst, Control);
+
+	PCSrc 		<= Control (9 downto 8);
+	RegWrite    <= Control (7);
+	ALUSrc      <= Control (6);
+	MemWrite    <= Control (5);
+	MemToReg    <= Control (4); 
+	AluOp       <= Control (3 downto 0);
 	
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
@@ -165,6 +192,7 @@ architecture arch of mini_risc is
 	u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
 	u_imm_gen : extensor port map(Inst(19 downto 8), Imm);
 	u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
+	
 	ALU_A <= R1_data;
 	u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
 	u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut);

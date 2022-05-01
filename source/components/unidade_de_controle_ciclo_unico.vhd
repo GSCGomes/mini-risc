@@ -11,9 +11,9 @@ use ieee.numeric_std.all;
 -- unidade de controle
 entity unidade_de_controle_ciclo_unico is
     generic (
-        INSTR_WIDTH       : natural := 16;
+        INSTR_WIDTH       : natural := 32;
         OPCODE_WIDTH      : natural := 4;
-        DP_CTRL_BUS_WIDTH : natural := 6;
+        DP_CTRL_BUS_WIDTH : natural := 10;
         ULA_CTRL_WIDTH    : natural := 4
     );
     port (
@@ -28,37 +28,50 @@ architecture beh of unidade_de_controle_ciclo_unico is
     --signal opcode   : std_logic_vector (OPCODE_WIDTH-1 downto 0);			-- opcode
     --signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH-1 downto 0);		-- controle
 
-    signal inst_aux : std_logic_vector (15 downto 0); -- instrucao
+    signal inst_aux : std_logic_vector (31 downto 0); -- instrucao
     signal opcode   : std_logic_vector (3 downto 0);  -- opcode
     signal ctrl_aux : std_logic_vector (5 downto 0);  -- controle
+    signal f4       : std_logic_vector (3 downto 0);  -- unique code for Type R and I oprations
 
 begin
     inst_aux <= instrucao;
     -- A linha abaixo não produz erro de compilação no Quartus II, mas no Modelsim (GHDL) produz.	
     --	opcode <= inst_aux (INSTR_WIDTH-1 downto INSTR_WIDTH-OPCODE_WIDTH);
-    opcode <= inst_aux (15 downto 12);
+    opcode <= inst_aux (3 downto 0);
+    f4 <= inst_aux (7 downto 4);
 
     process (opcode)
     begin
         case opcode is
-                -- NAND	
+                -- Type-R	
             when "0000" =>
-                ctrl_aux <= "110000";
-                -- OR
+                ctrl_aux <= {"001001", f4};
+                -- Type-I
             when "0001" =>
-                ctrl_aux <= "110001";
-                -- ADD
+                ctrl_aux <= {"001101", f4};
+                -- Type-L
             when "0010" =>
-                ctrl_aux <= "110010";
-                -- SUB	
+                ctrl_aux <= {"001100", "1111"};
+                -- Type-Jr	
+            when "0011" =>
+                ctrl_aux <= {"100100", "1111"};
+                -- Type-S
             when "0100" =>
-                ctrl_aux <= "110100";
-                -- XOR
-            when "1100" =>
-                ctrl_aux <= "111100";
+                ctrl_aux <= {"000111", "1111"};
+                -- Type-B  
+            when "0101" =>
+                ctrl_aux <= {"010000", "1111"};
+                -- Type-J
+            when "0111" =>
+                ctrl_aux <= {"010000", "1111"};
+                --Type-Ecal
+            when "1000" =>
+                ctrl_aux <= {"110000", "1111"};
             when others =>
                 ctrl_aux <= (others => '0');
         end case;
     end process;
+
     controle <= ctrl_aux;
+    
 end beh;
