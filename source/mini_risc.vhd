@@ -16,7 +16,7 @@ architecture arch of mini_risc is
 
 	-- control signals (will be ports of the control unit)
 	signal RegWrite, ALUSrc, MemWrite, MemRead, MemToReg : std_logic;
-	signal AluOp : std_logic_vector(2 downto 0);
+	signal AluOp : std_logic_vector(3 downto 0);
 	signal PCSrc : std_logic_vector(1 downto 0);
 	
 	-- interruption signals (will be ports of the int. controller)
@@ -134,7 +134,7 @@ architecture arch of mini_risc is
 		 port (
 			  entrada_a : in std_logic_vector((largura_dado - 1) downto 0);
 			  entrada_b : in std_logic_vector((largura_dado - 1) downto 0);
-			  seletor   : in std_logic_vector(2 downto 0);
+			  seletor   : in std_logic_vector(3 downto 0);
 			  saida     : out std_logic_vector((largura_dado - 1) downto 0)
 		 );
 	end component;
@@ -158,7 +158,7 @@ architecture arch of mini_risc is
 		generic (
 			INSTR_WIDTH       : natural := 32;
 			OPCODE_WIDTH      : natural := 4;
-			DP_CTRL_BUS_WIDTH : natural := 9;
+			DP_CTRL_BUS_WIDTH : natural := 10;
 			ULA_CTRL_WIDTH    : natural := 4
 		);
 		port (

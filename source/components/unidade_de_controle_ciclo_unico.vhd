@@ -30,7 +30,7 @@ architecture beh of unidade_de_controle_ciclo_unico is
 
     signal inst_aux : std_logic_vector (31 downto 0); -- instrucao
     signal opcode   : std_logic_vector (3 downto 0);  -- opcode
-    signal ctrl_aux : std_logic_vector (5 downto 0);  -- controle
+    signal ctrl_aux : std_logic_vector (9 downto 0);  -- controle
     signal f4       : std_logic_vector (3 downto 0);  -- unique code for Type R and I oprations
 
 begin
@@ -45,28 +45,28 @@ begin
         case opcode is
                 -- Type-R	
             when "0000" =>
-                ctrl_aux <= {"001001", f4};
+                ctrl_aux <= "001001" & f4;
                 -- Type-I
             when "0001" =>
-                ctrl_aux <= {"001101", f4};
+                ctrl_aux <= "001101" & f4;
                 -- Type-L
             when "0010" =>
-                ctrl_aux <= {"001100", "1111"};
+                ctrl_aux <= "001100" & "1111";
                 -- Type-Jr	
             when "0011" =>
-                ctrl_aux <= {"100100", "1111"};
+                ctrl_aux <= "100100" & "1111";
                 -- Type-S
             when "0100" =>
-                ctrl_aux <= {"000111", "1111"};
+                ctrl_aux <= "000111" & "1111";
                 -- Type-B  
             when "0101" =>
-                ctrl_aux <= {"010000", "1111"};
+                ctrl_aux <= "010000" & "1111";
                 -- Type-J
             when "0111" =>
-                ctrl_aux <= {"010000", "1111"};
+                ctrl_aux <= "010000" & "1111";
                 --Type-Ecal
             when "1000" =>
-                ctrl_aux <= {"110000", "1111"};
+                ctrl_aux <= "110000" & "1111";
             when others =>
                 ctrl_aux <= (others => '0');
         end case;
