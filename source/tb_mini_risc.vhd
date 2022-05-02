@@ -2,21 +2,21 @@
 -- Escola de Engenharia
 -- Departamento de Engenharia Eletrônica
 -- Autoria: Professor Ricardo de Oliveira Duarte
--- Testbench para o processador_ciclo_unico
+-- Testbench para o mini_risc
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
--- Este arquivo irá gerar um sinal de clock e reset de modo a possibilitar a simulação do DUT processador_ciclo_unico
+-- Este arquivo irá gerar um sinal de clock e reset de modo a possibilitar a simulação do DUT mini_risc
 
-entity tb_processador_ciclo_unico is
-end tb_processador_ciclo_unico;
+entity tb_mini_risc is
+end tb_mini_risc;
 
-architecture estimulos of tb_processador_ciclo_unico is
+architecture estimulos of tb_mini_risc is
 	-- Declarar a unidade sob teste
-	component processador_ciclo_unico
+	component mini_risc
 		port (
-			reset : in std_logic;
-			clk   : in std_logic
+			clk   : in std_logic;
+			reset : in std_logic
 		);
 	end component;
 
@@ -29,11 +29,11 @@ architecture estimulos of tb_processador_ciclo_unico is
 	constant OFFSET     : time := 5 ns;
 begin
 	-- instancia o componente 
-	instancia : processador_ciclo_unico port map(clk => clk, reset => rst);
+	instancia : mini_risc port map(clk => clk, reset => rst);
 	-- processo para gerar o sinal de clock 		
 	gera_clock : process
 	begin
-		wait for OFFSET;
+        wait for OFFSET;
 		CLOCK_LOOP : loop
 			clk <= '0';
 			wait for (PERIODO - (PERIODO * DUTY_CYCLE));
