@@ -16,7 +16,7 @@ architecture estimulos of tb_mini_risc is
 	component mini_risc
 		port (
 			clk   : in std_logic;
-			reset : in std_logic
+			rst   : in std_logic
 		);
 	end component;
 
@@ -29,7 +29,7 @@ architecture estimulos of tb_mini_risc is
 	constant OFFSET     : time := 5 ns;
 begin
 	-- instancia o componente 
-	instancia : mini_risc port map(clk => clk, reset => rst);
+	instancia : mini_risc port map(clk => clk, rst => rst);
 	-- processo para gerar o sinal de clock 		
 	gera_clock : process
 	begin

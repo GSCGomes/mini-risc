@@ -29,11 +29,12 @@ begin
 		if (rising_edge(clk)) then
 			if (reset = '1') then
 				rom <= (
-					0      => X"00000200", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
-					1      => X"00004302", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
-					2      => X"0000C423", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
-					3      => X"00002144", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
-					others => X"00000000"  -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
+                    0      => B"00101000000000000000000100000001",
+                    1      => B"00101100000000000000001100000001",
+                    2      => B"00110000101000101100000000000000",
+                    3      => B"00000011000000000000010010000100",
+                    4      => B"00110100000000000000010010000010",
+					others => B"00000000000000000000000000000000"  -- exemplo de uma instrução qualquer de 06 bits (4 símbos em hexadecimal)
 					);
 			else
 				Instrucao <= rom(to_integer(unsigned(Endereco)));
