@@ -28,6 +28,8 @@ architecture arch of mini_risc is
 
 	signal Control : std_logic_vector(9 downto 0); 	
 	signal Inst : std_logic_vector(31 downto 0);
+
+	signal BranchImm : std_logic_vector(11 downto 0);
 	
 	signal R1_data, R2_data, MemOut, WriteBack, Imm : std_logic_vector(31 downto 0);
 	signal ALU_A, ALU_B, AluResult : std_logic_vector(31 downto 0);
@@ -166,8 +168,6 @@ architecture arch of mini_risc is
 			controle  : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0) -- controle da via
 		);
 	end component;
-	
-
 
 	
 	begin
@@ -180,6 +180,7 @@ architecture arch of mini_risc is
 	MemWrite    <= Control (5);
 	MemToReg    <= Control (4); 
 	AluOp       <= Control (3 downto 0);
+    BranchImm   <= Inst(31 downto 26) & Inst(13 downto 8);
 	
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
@@ -188,7 +189,7 @@ architecture arch of mini_risc is
 	u_pc4 : somador port map(PC, X"004", PC4);
 	u_memi : memi port map(clk, rst, PC, Inst);
 	u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), Inst(31 downto 26), WriteBack, R1_data, R2_data, clk, RegWrite);
-	u_shift : deslocador port map(Inst(31 downto 26) & Inst(13 downto 8), "00", "01", BranchIncr);
+    u_shift : deslocador port map(BranchImm, "00", "01", BranchIncr);
 	u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
 	u_imm_gen : extensor port map(Inst(19 downto 8), Imm);
 	u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
