@@ -187,16 +187,16 @@ architecture arch of mini_risc is
 	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
 	u_epc : registrador port map(ProbablePC, '1', clk, rst, EPC);
 	u_pc4 : somador port map(PC, X"004", PC4);
-	u_memi : memi port map(clk, rst, PC, Inst);
-	u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), Inst(31 downto 26), WriteBack, R1_data, R2_data, clk, RegWrite);
+    u_memi : memi port map(clk, rst, PC, Inst);
+    u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), Inst(31 downto 26), WriteBack, R1_data, R2_data, clk, RegWrite);
     u_shift : deslocador port map(BranchImm, "00", "01", BranchIncr);
-	u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
-	u_imm_gen : extensor port map(Inst(19 downto 8), Imm);
-	u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
+    u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
+    u_imm_gen : extensor port map(Inst(19 downto 8), Imm);
+    u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
 	
 	ALU_A <= R1_data;
-	u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
-	u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut);
-	u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);	
+    u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
+    u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut);
+    u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);	
 	
 end arch;

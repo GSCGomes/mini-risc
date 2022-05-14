@@ -40,7 +40,7 @@ begin
     opcode <= inst_aux (3 downto 0);
     f4 <= inst_aux (7 downto 4);
 
-    process (opcode)
+    process (opcode, f4)
     begin
         case opcode is
                 -- Type-R	

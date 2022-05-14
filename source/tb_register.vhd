@@ -34,6 +34,7 @@ architecture estimulos of tb_register is
 	constant OFFSET     : time := 5 ns;
 begin
 	-- instancia o componente 
+    WE <= '1';
 	instancia : registrador generic map (largura_dado => 32) port map(entrada_dados, WE, clk, reset, saida_dados);
 	-- processo para gerar o sinal de clock 		
 	gera_clock : process
@@ -42,21 +43,21 @@ begin
 		CLOCK_LOOP : loop
 			clk <= '0';
             entrada_dados <= X"0000000A";
-            WE <= '1';
+            -- WE <= '1';
 			wait for (PERIODO - (PERIODO * DUTY_CYCLE));
 			clk <= '1';
 			wait for (PERIODO * DUTY_CYCLE);
 
 			clk <= '0';
             entrada_dados <= X"FFFFFFFF";
-            WE <= '1';
+            -- WE <= '1';
 			wait for (PERIODO - (PERIODO * DUTY_CYCLE));
 			clk <= '1';
 			wait for (PERIODO * DUTY_CYCLE);
 
 			clk <= '0';
             entrada_dados <= X"0C0C0C0C";
-            WE <= '0';
+            -- WE <= '0';
 			wait for (PERIODO - (PERIODO * DUTY_CYCLE));
 			clk <= '1';
 			wait for (PERIODO * DUTY_CYCLE);
