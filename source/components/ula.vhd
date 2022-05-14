@@ -11,7 +11,7 @@ use ieee.std_logic_unsigned.all;
 
 entity ula is
     generic (
-        largura_dado : natural
+        largura_dado : natural := 32
     );
 
     port (

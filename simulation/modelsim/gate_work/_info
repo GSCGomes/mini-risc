@@ -1,0 +1,145 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/guilh/Projects/mini_risc/simulation/modelsim
+Ehard_block
+Z1 w1652484782
+Z2 DPx4 ieee 16 vital_primitives 0 22 G>kiXP8Q9dRClKfK1Zn7j1
+Z3 DPx10 cycloneive 20 cycloneive_atom_pack 0 22 N5CzKW88F^ShIK@<7Vek12
+Z4 DPx4 ieee 12 vital_timing 0 22 J>EBealN09f8GzldA[z2>3
+Z5 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z6 DPx4 ieee 14 std_logic_1164 0 22 eNV`TJ_GofJTzYa?f<@Oe1
+Z7 DPx10 cycloneive 21 cycloneive_components 0 22 K8IbX`K5[Y1gJUKg2X_071
+R0
+Z8 8mini_risc.vho
+Z9 Fmini_risc.vho
+l0
+L34
+VF25TiLjh`DQcC8Z=zbJ?Y3
+!s100 A`ID_i56<Ua56=ZD=[EG=2
+Z10 OV;C;10.5b;63
+31
+Z11 !s110 1652484813
+!i10b 1
+Z12 !s108 1652484812.000000
+Z13 !s90 -reportprogress|300|-93|-work|work|mini_risc.vho|
+Z14 !s107 mini_risc.vho|
+!i113 1
+Z15 o-93 -work work
+Z16 tExplicit 1 CvgOpt 0
+Astructure
+R2
+R3
+R4
+R5
+R6
+R7
+DEx4 work 10 hard_block 0 22 F25TiLjh`DQcC8Z=zbJ?Y3
+l64
+L50
+VZ2P8e]:^NT<7Y7=;nM1Vi3
+!s100 2S?JL;LJ@<3:BHXTNcXS]3
+R10
+31
+R11
+!i10b 1
+R12
+R13
+R14
+!i113 1
+R15
+R16
+Etb_mini_risc
+Z17 w1651527256
+Z18 DPx4 ieee 11 numeric_std 0 22 :ASDNFgHXf_ih3J@9F3Ze1
+R5
+R6
+R0
+Z19 8C:/Users/guilh/Projects/mini_risc/source/tb_mini_risc.vhd
+Z20 FC:/Users/guilh/Projects/mini_risc/source/tb_mini_risc.vhd
+l0
+L11
+VGggML:FbDmS:623lBP@162
+!s100 eZSW>ESHOMb[3YNmYTl0V0
+R10
+31
+R11
+!i10b 1
+Z21 !s108 1652484813.000000
+Z22 !s90 -reportprogress|300|-93|-work|work|C:/Users/guilh/Projects/mini_risc/source/tb_mini_risc.vhd|
+Z23 !s107 C:/Users/guilh/Projects/mini_risc/source/tb_mini_risc.vhd|
+!i113 1
+R15
+R16
+Aestimulos
+R18
+R5
+R6
+DEx4 work 12 tb_mini_risc 0 22 GggML:FbDmS:623lBP@162
+l30
+L14
+V6kVNlXMiboejS;7k3k3^S1
+!s100 Z=He6mIj:Z_@=bbIT_Vb@0
+R10
+31
+R11
+!i10b 1
+R21
+R22
+R23
+!i113 1
+R15
+R16
+Eula
+R1
+R2
+R3
+R4
+R5
+R6
+R7
+R0
+R8
+R9
+l0
+L77
+Vf@D;nPYLFL2ae1:Fam_LU1
+!s100 UAC^2QQnS5^b6a=onMVWc2
+R10
+31
+R11
+!i10b 1
+R12
+R13
+R14
+!i113 1
+R15
+R16
+Astructure
+R2
+R3
+R4
+R5
+R6
+R7
+DEx4 work 3 ula 0 22 f@D;nPYLFL2ae1:Fam_LU1
+l968
+L189
+VzS54R2`VkF;agei5AFXO@0
+!s100 FgZZjAMK[]X@RklMhc=R^1
+R10
+31
+R11
+!i10b 1
+R12
+R13
+R14
+!i113 1
+R15
+R16
