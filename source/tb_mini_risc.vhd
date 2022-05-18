@@ -29,7 +29,7 @@ architecture estimulos of tb_mini_risc is
 	constant OFFSET     : time := 5 ns;
 begin
 	-- instancia o componente 
-	instancia : mini_risc port map(clk => clk, rst => rst);
+	u_mini_risc : mini_risc port map(clk => clk, rst => rst);
 	-- processo para gerar o sinal de clock 		
 	gera_clock : process
 	begin
@@ -44,7 +44,7 @@ begin
 	-- processo para gerar o estimulo de reset		
 	gera_reset : process
 	begin
-		rst <= '0';
+		rst <= '1';
 		for i in 1 to 2 loop
 			wait until rising_edge(clk);
 		end loop;
