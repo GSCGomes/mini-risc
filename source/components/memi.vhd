@@ -23,7 +23,9 @@ end entity;
 architecture comportamental of memi is
 	type rom_type is array (0 to 2 ** MI_ADDR_WIDTH - 1) of std_logic_vector(INSTR_WIDTH - 1 downto 0);
 	signal rom : rom_type;
+    signal EnderecoDeslocado : std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
 begin
+    EnderecoDeslocado <= B"00" & Endereco(MI_ADDR_WIDTH - 1 downto 2);
 	process (clk, reset) is
 	begin
 		if (rising_edge(clk)) then
@@ -37,7 +39,7 @@ begin
 					others => B"00000000000000000000000000000000"  -- exemplo de uma instrução qualquer de 06 bits (4 símbos em hexadecimal)
 					);
 			else
-				Instrucao <= rom(to_integer(unsigned(Endereco)));
+				Instrucao <= rom(to_integer(unsigned(EnderecoDeslocado)));
 			end if;
 		end if;
 	end process;

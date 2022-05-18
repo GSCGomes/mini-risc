@@ -181,6 +181,7 @@ architecture arch of mini_risc is
 	MemToReg    <= Control (4); 
 	AluOp       <= Control (3 downto 0);
     BranchImm   <= Inst(31 downto 26) & Inst(13 downto 8);
+    IntCtrl     <= '0';
 	
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
@@ -193,8 +194,8 @@ architecture arch of mini_risc is
     u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
     u_imm_gen : extensor port map(Inst(19 downto 8), Imm);
     u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
-	
-	ALU_A <= R1_data;
+    
+    ALU_A <= R1_data;
     u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
     u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);	

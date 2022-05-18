@@ -28,8 +28,9 @@ end banco_registradores;
 
 architecture comportamental of banco_registradores is
     type registerfile is array(0 to ((2 ** largura_ende) - 1)) of std_logic_vector((largura_dado - 1) downto 0);
-    signal banco : registerfile;
+    signal banco : registerfile := (others => (others => '0'));
 begin
+    -- banco(0) <= ((largura_dado -1) downto 0 => '0');
     leitura : process (clk) is
     begin
         -- lê o registrador de endereço R1 da instrução apontada por PC no ciclo anterior,
