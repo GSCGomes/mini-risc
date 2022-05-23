@@ -16,7 +16,14 @@ use work.interface_p.all;
 entity mini_risc is
 	port (
 		clk : in std_logic;
-		rst : in std_logic
+		rst : in std_logic;
+        leds : out std_logic_vector(9 downto 0);
+        display_1 : out std_logic_vector(6 downto 0);
+        display_2 : out std_logic_vector(6 downto 0);
+        display_3 : out std_logic_vector(6 downto 0);
+        display_4 : out std_logic_vector(6 downto 0);
+        display_5 : out std_logic_vector(6 downto 0);
+        display_6 : out std_logic_vector(6 downto 0)
 	);
 end mini_risc;
 
@@ -48,7 +55,6 @@ architecture arch of mini_risc is
     signal mem_interface : interface_t;
     type display_t is array (0 to 5) of std_logic_vector(6 downto 0);
     signal display : display_t;
-    signal leds : std_logic_vector(9 downto 0);
 
 	component mux21 is
 		 generic (
@@ -214,6 +220,13 @@ architecture arch of mini_risc is
             when others => PreImm <= Inst(19 downto 8);
         end case;
     end process;
+
+    display_1 <= display(0);
+    display_2 <= display(1);
+    display_3 <= display(2);
+    display_4 <= display(3);
+    display_5 <= display(4);
+    display_6 <= display(5);
 
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);

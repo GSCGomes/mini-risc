@@ -16,12 +16,26 @@ architecture estimulos of tb_mini_risc is
 	component mini_risc
 		port (
 			clk   : in std_logic;
-			rst   : in std_logic
+            rst : in std_logic;
+            leds : std_logic_vector(9 downto 0);
+            display_1 : std_logic_vector(6 downto 0);
+            display_2 : std_logic_vector(6 downto 0);
+            display_3 : std_logic_vector(6 downto 0);
+            display_4 : std_logic_vector(6 downto 0);
+            display_5 : std_logic_vector(6 downto 0);
+            display_6 : std_logic_vector(6 downto 0)
 		);
 	end component;
 
 	signal clk : std_logic;
 	signal rst : std_logic;
+    signal leds : std_logic_vector(9 downto 0);
+    signal display_1 : std_logic_vector(6 downto 0);
+    signal display_2 : std_logic_vector(6 downto 0);
+    signal display_3 : std_logic_vector(6 downto 0);
+    signal display_4 : std_logic_vector(6 downto 0);
+    signal display_5 : std_logic_vector(6 downto 0);
+    signal display_6 : std_logic_vector(6 downto 0);
 
 	-- Definição das configurações de clock				
 	constant PERIODO    : time := 20 ns;
@@ -29,7 +43,7 @@ architecture estimulos of tb_mini_risc is
 	constant OFFSET     : time := 5 ns;
 begin
 	-- instancia o componente 
-	u_mini_risc : mini_risc port map(clk => clk, rst => rst);
+	u_mini_risc : mini_risc port map(clk, rst, leds, display_1, display_2, display_3, display_4, display_5, display_6);
 	-- processo para gerar o sinal de clock 		
 	gera_clock : process
 	begin
