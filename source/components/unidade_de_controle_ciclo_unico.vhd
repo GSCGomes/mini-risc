@@ -28,27 +28,29 @@ architecture beh of unidade_de_controle_ciclo_unico is
     --signal opcode   : std_logic_vector (OPCODE_WIDTH-1 downto 0);			-- opcode
     --signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH-1 downto 0);		-- controle
 
-    signal inst_aux : std_logic_vector (31 downto 0); -- instrucao
-    signal opcode   : std_logic_vector (3 downto 0);  -- opcode
-    signal ctrl_aux : std_logic_vector (9 downto 0);  -- controle
-    signal f4       : std_logic_vector (3 downto 0);  -- unique code for Type R and I oprations
+    signal FUNC_WIDTH : natural := 4;
+
+    signal inst_aux : std_logic_vector (INSTR_WIDTH - 1 downto 0); -- instrucao
+    signal opcode   : std_logic_vector (OPCODE_WIDTH - 1 downto 0);  -- opcode
+    signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH - 1 downto 0);  -- controle
+    signal func     : std_logic_vector (FUNC_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
 
 begin
     inst_aux <= instrucao;
     -- A linha abaixo não produz erro de compilação no Quartus II, mas no Modelsim (GHDL) produz.	
     --	opcode <= inst_aux (INSTR_WIDTH-1 downto INSTR_WIDTH-OPCODE_WIDTH);
-    opcode <= inst_aux (3 downto 0);
-    f4 <= inst_aux (7 downto 4);
+    opcode <= inst_aux (OPCODE_WIDTH - 1 downto 0);
+    func <= inst_aux (FUNC_WIDTH + OPCODE_WIDTH - 1 downto OPCODE_WIDTH);
 
-    process (opcode, f4)
+    process (opcode, func)
     begin
         case opcode is
                 -- Type-R	
             when "0000" =>
-                ctrl_aux <= "001001" & f4;
+                ctrl_aux <= "001001" & func;
                 -- Type-I
             when "0001" =>
-                ctrl_aux <= "001101" & f4;
+                ctrl_aux <= "001101" & func;
                 -- Type-L
             when "0010" =>
                 ctrl_aux <= "001100" & "1111";
