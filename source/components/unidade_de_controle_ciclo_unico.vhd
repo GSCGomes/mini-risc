@@ -23,24 +23,22 @@ entity unidade_de_controle_ciclo_unico is
 end unidade_de_controle_ciclo_unico;
 
 architecture beh of unidade_de_controle_ciclo_unico is
-    -- As linhas abaixo não produzem erro de compilação no Quartus II, mas no Modelsim (GHDL) produzem.	
-    --signal inst_aux : std_logic_vector (INSTR_WIDTH-1 downto 0);			-- instrucao
-    --signal opcode   : std_logic_vector (OPCODE_WIDTH-1 downto 0);			-- opcode
-    --signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH-1 downto 0);		-- controle
-
-    signal FUNC_WIDTH : natural := 4;
 
     signal inst_aux : std_logic_vector (INSTR_WIDTH - 1 downto 0); -- instrucao
-    signal opcode   : std_logic_vector (OPCODE_WIDTH - 1 downto 0);  -- opcode
     signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH - 1 downto 0);  -- controle
-    signal func     : std_logic_vector (FUNC_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    signal func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    signal sum_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+
+    -- using generic size for the 'Choose' signal on a switch case yields error on ModelSim-Altera
+    -- signal opcode   : std_logic_vector (OPCODE_WIDTH - 1 downto 0);  -- opcode
+    signal opcode   : std_logic_vector (4 - 1 downto 0);  -- opcode
 
 begin
+    sum_func <= std_logic_vector(to_unsigned(0, ULA_CTRL_WIDTH));
     inst_aux <= instrucao;
-    -- A linha abaixo não produz erro de compilação no Quartus II, mas no Modelsim (GHDL) produz.	
-    --	opcode <= inst_aux (INSTR_WIDTH-1 downto INSTR_WIDTH-OPCODE_WIDTH);
+
     opcode <= inst_aux (OPCODE_WIDTH - 1 downto 0);
-    func <= inst_aux (FUNC_WIDTH + OPCODE_WIDTH - 1 downto OPCODE_WIDTH);
+    func <= inst_aux (ULA_CTRL_WIDTH + OPCODE_WIDTH - 1 downto OPCODE_WIDTH);
 
     process (opcode, func)
     begin
@@ -53,22 +51,22 @@ begin
                 ctrl_aux <= "001101" & func;
                 -- Type-L
             when "0010" =>
-                ctrl_aux <= "001100" & "1111";
+                ctrl_aux <= "001100" & sum_func;
                 -- Type-Jr	
             when "0011" =>
-                ctrl_aux <= "100100" & "1111";
+                ctrl_aux <= "100100" & sum_func;
                 -- Type-S
             when "0100" =>
-                ctrl_aux <= "000111" & "1111";
+                ctrl_aux <= "000111" & sum_func;
                 -- Type-B  
             when "0101" =>
-                ctrl_aux <= "010000" & "1111";
+                ctrl_aux <= "010000" & sum_func;
                 -- Type-J
-            when "0111" =>
-                ctrl_aux <= "010000" & "1111";
+            when "0110" =>
+                ctrl_aux <= "010000" & sum_func;
                 --Type-Ecal
-            when "1000" =>
-                ctrl_aux <= "110000" & "1111";
+            when "0111" =>
+                ctrl_aux <= "110000" & sum_func;
             when others =>
                 ctrl_aux <= (others => '0');
         end case;

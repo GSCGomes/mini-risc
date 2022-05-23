@@ -54,8 +54,10 @@ begin
                 -- resultado_ula <= std_logic_vector(signed(entrada_a) sra to_integer(unsigned(entrada_b)));
             when "1000" => -- slt
                 resultado_ula <= zeros & less;
-            when others => -- Sub
+            when "1111" => -- Sub
                 resultado_ula <= entrada_a - entrada_b;
+            when others => -- Default is add
+                resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
         end case;
     end process;
     saida <= resultado_ula;
