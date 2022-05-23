@@ -18,6 +18,7 @@ architecture arch of mini_risc is
 	signal RegWrite, ALUSrc, MemWrite, MemRead, MemToReg : std_logic;
 	signal AluOp : std_logic_vector(3 downto 0);
 	signal PCSrc : std_logic_vector(1 downto 0);
+    signal BrokenImm : std_logic;
 	
 	-- interruption signals (will be ports of the int. controller)
 	signal IntCtrl : std_logic;
@@ -26,12 +27,13 @@ architecture arch of mini_risc is
 	-- miscellaneous relevant signals	
 	signal PC, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
 
-	signal Control : std_logic_vector(9 downto 0); 	
+	signal Control : std_logic_vector(10 downto 0); 	
 	signal Inst : std_logic_vector(31 downto 0);
 
-	signal BranchImm : std_logic_vector(11 downto 0);
-	
-	signal R1_data, R2_data, MemOut, WriteBack, Imm : std_logic_vector(31 downto 0);
+	signal BranchImm, PreImm : std_logic_vector(11 downto 0);	
+	signal Imm : std_logic_vector(31 downto 0);	
+
+	signal R1_data, R2_data, MemOut, WriteBack: std_logic_vector(31 downto 0);
 	signal ALU_A, ALU_B, AluResult : std_logic_vector(31 downto 0);
 	
 	component mux21 is
@@ -160,7 +162,7 @@ architecture arch of mini_risc is
 		generic (
 			INSTR_WIDTH       : natural := 32;
 			OPCODE_WIDTH      : natural := 4;
-			DP_CTRL_BUS_WIDTH : natural := 10;
+			DP_CTRL_BUS_WIDTH : natural := 11;
 			ULA_CTRL_WIDTH    : natural := 4
 		);
 		port (
@@ -174,6 +176,7 @@ architecture arch of mini_risc is
 
 	u_controler : unidade_de_controle_ciclo_unico port map(Inst, Control);
 
+	BrokenImm   <= Control (10);
 	PCSrc 		<= Control (9 downto 8);
 	RegWrite    <= Control (7);
 	ALUSrc      <= Control (6);
@@ -182,6 +185,14 @@ architecture arch of mini_risc is
 	AluOp       <= Control (3 downto 0);
     BranchImm   <= Inst(31 downto 26) & Inst(13 downto 8);
     IntCtrl     <= '0';
+
+    process (BrokenImm, PreImm, Inst)
+    begin
+        case BrokenImm is
+            when '1' => PreImm <= Inst(31 downto 26) & Inst(13 downto 8);
+            when others => PreImm <= Inst(19 downto 8);
+        end case;
+    end process;
 	
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
@@ -192,7 +203,7 @@ architecture arch of mini_risc is
     u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), Inst(31 downto 26), WriteBack, R1_data, R2_data, clk, RegWrite);
     u_shift : deslocador port map(BranchImm, "00", "01", BranchIncr);
     u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
-    u_imm_gen : extensor port map(Inst(19 downto 8), Imm);
+    u_imm_gen : extensor port map(PreImm, Imm);
     u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
     
     ALU_A <= R1_data;

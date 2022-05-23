@@ -13,7 +13,7 @@ entity unidade_de_controle_ciclo_unico is
     generic (
         INSTR_WIDTH       : natural := 32;
         OPCODE_WIDTH      : natural := 4;
-        DP_CTRL_BUS_WIDTH : natural := 10;
+        DP_CTRL_BUS_WIDTH : natural := 11;
         ULA_CTRL_WIDTH    : natural := 4
     );
     port (
@@ -45,28 +45,28 @@ begin
         case opcode is
                 -- Type-R	
             when "0000" =>
-                ctrl_aux <= "001001" & func;
+                ctrl_aux <= "0001001" & func;
                 -- Type-I
             when "0001" =>
-                ctrl_aux <= "001101" & func;
+                ctrl_aux <= "0001101" & func;
                 -- Type-L
             when "0010" =>
-                ctrl_aux <= "001100" & sum_func;
+                ctrl_aux <= "0001100" & sum_func;
                 -- Type-Jr	
             when "0011" =>
-                ctrl_aux <= "100100" & sum_func;
+                ctrl_aux <= "0100100" & sum_func;
                 -- Type-S
             when "0100" =>
-                ctrl_aux <= "000111" & sum_func;
+                ctrl_aux <= "1000111" & sum_func;
                 -- Type-B  
             when "0101" =>
-                ctrl_aux <= "010000" & sum_func;
+                ctrl_aux <= "1010000" & sum_func;
                 -- Type-J
             when "0110" =>
-                ctrl_aux <= "010000" & sum_func;
+                ctrl_aux <= "0010000" & sum_func;
                 --Type-Ecal
             when "0111" =>
-                ctrl_aux <= "110000" & sum_func;
+                ctrl_aux <= "0110000" & sum_func;
             when others =>
                 ctrl_aux <= (others => '0');
         end case;
