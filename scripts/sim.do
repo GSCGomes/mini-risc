@@ -7,4 +7,4 @@ log * -r
 add wave *
 view structure
 view signals
-run 10000 ns
+run 200 ns
