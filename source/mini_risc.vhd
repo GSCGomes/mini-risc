@@ -2,8 +2,16 @@
 -- Escola de Engenharia
 -- Departamento de Engenharia Eletrônica
 -- Autoria: Guilherme Gomes, Felipe Freitas, Melissa Monni
+library ieee;
+use ieee.std_logic_1164.all;
+
+package interface_p is
+    type interface_t is array (0 to 6) of std_logic_vector(31 downto 0);
+end package interface_p;
+
 library IEEE;
 use IEEE.std_logic_1164.all;
+use work.interface_p.all;
 
 entity mini_risc is
 	port (
@@ -35,6 +43,12 @@ architecture arch of mini_risc is
 
 	signal R1_data, R2_data, MemOut, WriteBack: std_logic_vector(31 downto 0);
 	signal ALU_A, ALU_B, AluResult : std_logic_vector(31 downto 0);
+
+    -- output interface
+    signal mem_interface : interface_t;
+    type display_t is array (0 to 5) of std_logic_vector(6 downto 0);
+    signal display : display_t;
+    signal leds : std_logic_vector(9 downto 0);
 
 	component mux21 is
 		 generic (
@@ -153,7 +167,8 @@ architecture arch of mini_risc is
 			  mem_write, mem_read : in std_logic; --sinais do controlador
 			  write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
 			  adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
-			  read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0)
+			  read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
+              interface           : out interface_t
 		 );
 	end component;
 
@@ -171,6 +186,12 @@ architecture arch of mini_risc is
 		);
 	end component;
 
+    component seven_seg_decoder is
+        port (
+            input  : in std_logic_vector(3 downto 0);
+            output : out std_logic_vector(6 downto 0)
+        );
+    end component;
 
 	begin
 
@@ -208,7 +229,13 @@ architecture arch of mini_risc is
 
     ALU_A <= R1_data;
     u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
-    u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut);
+    u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut, mem_interface);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);
+
+    leds <= mem_interface(0)(9 downto 0);
+    gen_display: 
+    for i in 0 to 5 generate
+        u_seven_seg : seven_seg_decoder port map(mem_interface(i+1)(3 downto 0), display(i));
+    end generate gen_display;
 
 end arch;
