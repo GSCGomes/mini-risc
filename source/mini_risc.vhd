@@ -19,23 +19,23 @@ architecture arch of mini_risc is
 	signal AluOp : std_logic_vector(3 downto 0);
 	signal PCSrc : std_logic_vector(1 downto 0);
     signal BrokenImm : std_logic;
-	
+
 	-- interruption signals (will be ports of the int. controller)
 	signal IntCtrl : std_logic;
 	signal IntAddr : std_logic_vector(11 downto 0);
-	
-	-- miscellaneous relevant signals	
+
+	-- miscellaneous relevant signals
 	signal PC, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
 
-	signal Control : std_logic_vector(10 downto 0); 	
+	signal Control : std_logic_vector(10 downto 0);
 	signal Inst : std_logic_vector(31 downto 0);
 
-	signal BranchImm, PreImm : std_logic_vector(11 downto 0);	
-	signal Imm : std_logic_vector(31 downto 0);	
+	signal BranchImm, PreImm : std_logic_vector(11 downto 0);
+	signal Imm : std_logic_vector(31 downto 0);
 
 	signal R1_data, R2_data, MemOut, WriteBack: std_logic_vector(31 downto 0);
 	signal ALU_A, ALU_B, AluResult : std_logic_vector(31 downto 0);
-	
+
 	component mux21 is
 		 generic (
 			  largura_dado : natural
@@ -171,7 +171,7 @@ architecture arch of mini_risc is
 		);
 	end component;
 
-	
+
 	begin
 
 	u_controler : unidade_de_controle_ciclo_unico port map(Inst, Control);
@@ -181,7 +181,7 @@ architecture arch of mini_risc is
 	RegWrite    <= Control (7);
 	ALUSrc      <= Control (6);
 	MemWrite    <= Control (5);
-	MemToReg    <= Control (4); 
+	MemToReg    <= Control (4);
 	AluOp       <= Control (3 downto 0);
     BranchImm   <= Inst(31 downto 26) & Inst(13 downto 8);
     IntCtrl     <= '0';
@@ -193,7 +193,7 @@ architecture arch of mini_risc is
             when others => PreImm <= Inst(19 downto 8);
         end case;
     end process;
-	
+
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
 	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
@@ -205,10 +205,10 @@ architecture arch of mini_risc is
     u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
     u_imm_gen : extensor port map(PreImm, Imm);
     u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
-    
+
     ALU_A <= R1_data;
     u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
     u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut);
-    u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);	
-	
+    u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);
+
 end arch;
