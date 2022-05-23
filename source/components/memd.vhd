@@ -25,16 +25,16 @@ architecture comportamental of memd is
     --alocar espaço para a memoria e iniciar com 0
     type data_mem is array (0 to number_of_words - 1) of std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
     signal ram      : data_mem := (others => (others => '0'));
-    signal ram_addr : std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
+    signal ram_addr : integer range 0 to (2**MD_ADDR_WIDTH -1) := 0;
 begin
-    ram_addr <= adress_mem(MD_ADDR_WIDTH - 1 downto 0);
+    ram_addr <= to_integer(unsigned(adress_mem(MD_ADDR_WIDTH - 1 downto 0))) mod number_of_words;
     process (clk)
     begin
         if (rising_edge(clk)) then
             if (mem_write = '1') then
-                ram(to_integer(unsigned(ram_addr))) <= write_data_mem;
+                ram(ram_addr) <= write_data_mem;
             end if;
         end if;
     end process;
-    read_data_mem <= ram(to_integer(unsigned(ram_addr))) when (mem_read = '1');
+    read_data_mem <= ram(ram_addr) when (mem_read = '1') else (others => '0');
 end comportamental;
