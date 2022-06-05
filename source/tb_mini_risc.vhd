@@ -17,13 +17,13 @@ architecture estimulos of tb_mini_risc is
 		port (
 			clk   : in std_logic;
             rst : in std_logic;
-            leds : std_logic_vector(9 downto 0);
-            display_1 : std_logic_vector(6 downto 0);
-            display_2 : std_logic_vector(6 downto 0);
-            display_3 : std_logic_vector(6 downto 0);
-            display_4 : std_logic_vector(6 downto 0);
-            display_5 : std_logic_vector(6 downto 0);
-            display_6 : std_logic_vector(6 downto 0)
+            leds : out std_logic_vector(9 downto 0);
+            display_1 : out std_logic_vector(6 downto 0);
+            display_2 : out std_logic_vector(6 downto 0);
+            display_3 : out std_logic_vector(6 downto 0);
+            display_4 : out std_logic_vector(6 downto 0);
+            display_5 : out std_logic_vector(6 downto 0);
+            display_6 : out std_logic_vector(6 downto 0)
 		);
 	end component;
 
