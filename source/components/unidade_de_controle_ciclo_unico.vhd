@@ -40,7 +40,7 @@ begin
     opcode <= inst_aux (OPCODE_WIDTH - 1 downto 0);
     func <= inst_aux (ULA_CTRL_WIDTH + OPCODE_WIDTH - 1 downto OPCODE_WIDTH);
 
-    process (opcode, func)
+    process (opcode, func, sum_func)
     begin
         case opcode is
                 -- Type-R	
