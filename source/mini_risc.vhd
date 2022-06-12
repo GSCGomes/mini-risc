@@ -11,6 +11,7 @@ end package interface_p;
 
 library IEEE;
 use IEEE.std_logic_1164.all;
+use ieee.std_logic_misc.all;
 use work.interface_p.all;
 
 entity mini_risc is
@@ -32,7 +33,7 @@ architecture arch of mini_risc is
 	-- control signals (will be ports of the control unit)
 	signal RegWrite, ALUSrc, MemWrite, MemRead, MemToReg : std_logic;
 	signal AluOp : std_logic_vector(3 downto 0);
-	signal PCSrc : std_logic_vector(1 downto 0);
+	signal PCSrc, PCSrcCtrl : std_logic_vector(1 downto 0);
     signal BrokenImm : std_logic;
 
 	-- interruption signals (will be ports of the int. controller)
@@ -49,6 +50,7 @@ architecture arch of mini_risc is
 	signal Imm : std_logic_vector(31 downto 0);
 
 	signal R1_data, R2_data, MemOut, WriteBack: std_logic_vector(31 downto 0);
+    signal ALU_zero : std_logic;
 	signal ALU_A, ALU_B, AluResult : std_logic_vector(31 downto 0);
 
     -- output interface
@@ -204,7 +206,7 @@ architecture arch of mini_risc is
 	u_controler : unidade_de_controle_ciclo_unico port map(Inst, Control);
 
 	BrokenImm   <= Control (10);
-	PCSrc 		<= Control (9 downto 8);
+	PCSrcCtrl   <= Control (9 downto 8);
 	RegWrite    <= Control (7);
 	ALUSrc      <= Control (6);
 	MemWrite    <= Control (5);
@@ -228,7 +230,10 @@ architecture arch of mini_risc is
     display_5 <= display(4);
     display_6 <= display(5);
 
-	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, AluResult(11 downto 0), EPC, PCSrc, ProbablePC);
+    PCSrc(0) <= (PCSrcCtrl(0) and ALU_zero) or (PCSrcCtrl(0) and PCSrcCtrl(1));
+    PCSrc(1) <= PCSrcCtrl(1);
+
+	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, BranchIncr, EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
 	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
 	u_epc : registrador port map(ProbablePC, '1', clk, rst, EPC);
@@ -242,6 +247,7 @@ architecture arch of mini_risc is
 
     ALU_A <= R1_data;
     u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
+    ALU_zero <= AluResult(0);
     u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut, mem_interface);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);
 

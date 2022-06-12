@@ -28,6 +28,7 @@ architecture beh of unidade_de_controle_ciclo_unico is
     signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH - 1 downto 0);  -- controle
     signal func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
     signal sum_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    signal sub_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
 
     -- using generic size for the 'Choose' signal on a switch case yields error on ModelSim-Altera
     -- signal opcode   : std_logic_vector (OPCODE_WIDTH - 1 downto 0);  -- opcode
@@ -60,10 +61,10 @@ begin
                 ctrl_aux <= "1000111" & sum_func;
                 -- Type-B  
             when "0101" =>
-                ctrl_aux <= "1010000" & sum_func;
+                ctrl_aux <= "1010000" & func;
                 -- Type-J
             when "0110" =>
-                ctrl_aux <= "0010000" & sum_func;
+                ctrl_aux <= "0100000" & sum_func;
                 --Type-Ecal
             when "0111" =>
                 ctrl_aux <= "0110000" & sum_func;

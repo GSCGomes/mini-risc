@@ -27,11 +27,13 @@ architecture comportamental of ula is
 
     signal zeros : std_logic_vector((largura_dado - 2) downto 0);
     signal less : std_logic;
+    signal equal : std_logic;
 begin
     less <= '1' when entrada_a < entrada_b else '0';
+    equal <= '1' when entrada_a = entrada_b else '0';
     zeros <= (others => '0');
 
-    process (entrada_a, entrada_b, seletor) is
+    process (entrada_a, entrada_b, less, equal, seletor) is
     begin
         case(seletor) is
             when "0000" => -- soma aritmética com sinal (add/addi)
@@ -52,8 +54,14 @@ begin
             when "0111" => -- sra/srai
                 resultado_ula <= std_logic_vector(shift_right(signed(entrada_a), to_integer(unsigned(entrada_b))));
                 -- resultado_ula <= std_logic_vector(signed(entrada_a) sra to_integer(unsigned(entrada_b)));
-            when "1000" => -- slt
+            when "1000" => -- slt/blt
                 resultado_ula <= zeros & less;
+            when "1001" => -- beq
+                resultado_ula <= zeros & equal;
+            when "1010" => -- bne
+                resultado_ula <= zeros & (not equal);
+            when "1011" => -- bge
+                resultado_ula <= zeros & (not less);
             when "1111" => -- Sub
                 resultado_ula <= entrada_a - entrada_b;
             when others => -- Default is add

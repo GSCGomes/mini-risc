@@ -60,6 +60,27 @@ begin
             seletor <= "0010"; -- or
 			wait for OFFSET;
 
+			entrada_a <= X"FFFF0000";
+			entrada_b <= X"FFFFFF00";
+            seletor <= "1001"; -- eq
+			wait for OFFSET;
+
+			entrada_a <= X"FFFFFF00";
+			entrada_b <= X"FFFFFF00";
+			wait for OFFSET;
+
+			entrada_a <= X"FFFFFF00";
+			entrada_b <= X"FFFFFE00";
+			wait for OFFSET;
+
+			entrada_a <= X"00000002";
+			entrada_b <= X"00000002";
+			wait for OFFSET;
+
+			entrada_a <= X"00000002";
+			entrada_b <= X"0000000F";
+			wait for OFFSET;
+
 		end loop CLOCK_LOOP;
 	end process test_ula;
 end;
