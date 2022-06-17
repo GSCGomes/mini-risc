@@ -35,7 +35,7 @@ begin
     banco(0) <= std_logic_vector(to_unsigned(0, largura_dado));
     banco(1 to 2 ** largura_ende - 1) <= aux_banco(1 to 2 ** largura_ende - 1);
 
-    leitura : process (clk) is
+    leitura : process (ent_R1_ende, ent_R2_ende) is
     begin
         -- lê o registrador de endereço R1 da instrução apontada por PC no ciclo anterior,
         -- lê o registrador de endereço R2 da instrução apontada por PC no ciclo anterior.
