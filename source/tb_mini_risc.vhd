@@ -59,7 +59,8 @@ begin
 	gera_reset : process
 	begin
 		rst <= '1';
-        wait until falling_edge(clk);
+        wait until rising_edge(clk);
+        wait for (OFFSET);
 		rst <= '0';
 		wait;
 	end process gera_reset;
