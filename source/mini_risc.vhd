@@ -323,11 +323,13 @@ architecture arch of mini_risc is
     display_4 <= display(3);
     display_5 <= display(4);
     display_6 <= display(5);
-    leds <= mem_interface(0)(9 downto 0);
+    leds(9 downto 0) <= Control(9 downto 0);
     gen_display: 
-    for i in 0 to 5 generate
-        u_seven_seg : seven_seg_decoder port map(mem_interface(i+1)(3 downto 0), display(i));
+    for i in 0 to 3 generate
+        u_seven_seg : seven_seg_decoder port map(mem_interface(i)(3 downto 0), display(i));
     end generate gen_display;
+    u_seven_seg_pc1 : seven_seg_decoder port map(PC(7 downto 4), display(4));
+    u_seven_seg_pc2 : seven_seg_decoder port map(PC(3 downto 0), display(5));
 
 
 end arch;
