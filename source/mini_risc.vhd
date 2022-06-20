@@ -31,27 +31,33 @@ end mini_risc;
 architecture arch of mini_risc is
 
 	-- control signals (will be ports of the control unit)
-	signal RegWrite, ALUSrc, MemWrite, MemRead, MemToReg : std_logic;
-	signal AluOp : std_logic_vector(3 downto 0);
-	signal PCSrc, PCSrcCtrl : std_logic_vector(1 downto 0);
-    signal BrokenImm : std_logic;
+    signal AluSrc, AluSrc_DX : std_logic;
+	signal RegWrite, MemWrite, MemRead, MemToReg : std_logic;
+	signal RegWrite_DX, MemWrite_DX, MemToReg_DX : std_logic;
+    signal RegWrite_MW, MemWrite_MW, MemToReg_MW : std_logic;
+
+	signal AluOp, AluOp_DX : std_logic_vector(3 downto 0);
+	signal PCSrc, PCSrcCtrl, PCSrcCtrl_DX : std_logic_vector(1 downto 0);
+    signal BrokenImm, BrokenImm_DX : std_logic;
 
 	-- interruption signals (will be ports of the int. controller)
 	signal IntCtrl : std_logic;
 	signal IntAddr : std_logic_vector(11 downto 0);
 
 	-- miscellaneous relevant signals
-	signal PC, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
+	signal PC, PC_DX, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
 
 	signal Control : std_logic_vector(10 downto 0);
-	signal Inst : std_logic_vector(31 downto 0);
+	signal Inst, Inst_DX : std_logic_vector(31 downto 0);
 
 	signal BranchImm, PreImm : std_logic_vector(11 downto 0);
 	signal Imm : std_logic_vector(31 downto 0);
 
-	signal R1_data, R2_data, MemOut, WriteBack: std_logic_vector(31 downto 0);
+    signal RD, RD_MW : std_logic_vector(5 downto 0);
+
+	signal R1_data, R2_data, R2_data_MW, MemOut, WriteBack: std_logic_vector(31 downto 0);
     signal ALU_zero : std_logic;
-	signal ALU_A, ALU_B, AluResult : std_logic_vector(31 downto 0);
+	signal ALU_A, ALU_B, AluResult, AluResult_MW : std_logic_vector(31 downto 0);
 
     -- output interface
     signal mem_interface : interface_t;
@@ -88,6 +94,12 @@ architecture arch of mini_risc is
 			saida_dados    : out std_logic_vector((largura_dado - 1) downto 0)
 		);
 		end component;
+    component registrador1b is
+        port (
+            entrada_dados, WE, clk, reset : in std_logic;
+            saida_dados    : out std_logic
+        );
+    end component;
 
 	component somador is
 		generic (
@@ -215,6 +227,29 @@ architecture arch of mini_risc is
     BranchImm   <= Inst(31 downto 26) & Inst(13 downto 8);
     IntCtrl     <= '0';
 
+
+    -- Instruction Fetch Stage (IF)
+	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, BranchIncr, EPC, PCSrc, ProbablePC);
+	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
+	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
+	u_epc : registrador port map(ProbablePC, '1', clk, rst, EPC);
+	u_pc4 : somador port map(PC, X"004", PC4);
+    u_memi : memi port map(clk, rst, PC, Inst);
+
+    -- IF-DX pipeline registers
+    -- -- datapath signals
+    u_ifdx_pc : registrador generic map (largura_dado => 12) port map(PC, '1', clk, rst, PC_DX);
+    u_ifdx_inst : registrador generic map (largura_dado => 32) port map(Inst, '1', clk, rst, Inst_DX);
+    -- -- control signals
+    u_ifdx_pcsrcctrl : registrador generic map (largura_dado => 2) port map(PCSrcCtrl, '1', clk, rst, PCSrcCtrl_DX);
+    u_ifdx_alusrc : registrador1b generic map (largura_dado => 1) port map(AluSrc, '1', clk, rst, AluSrc_DX);
+    u_ifdx_aluop : registrador generic map (largura_dado => 4) port map(AluOp, '1', clk, rst, AluOp_DX);
+    u_ifdx_brokenimm : registrador1b generic map (largura_dado => 1) port map(BrokenImm, '1', clk, rst, BrokenImm_DX);
+    u_ifdx_regwrite : registrador1b generic map (largura_dado => 1) port map(RegWrite, '1', clk, rst, RegWrite_DX);
+    u_ifdx_memwrite : registrador1b generic map (largura_dado => 1) port map(MemWrite, '1', clk, rst, MemWrite_DX);
+    u_ifdx_memtoreg : registrador1b generic map (largura_dado => 1) port map(MemToReg, '1', clk, rst, MemToReg_DX);
+
+    -- Instruction Decode and Execution Stage (DX)
     process (BrokenImm, PreImm, Inst)
     begin
         case BrokenImm is
@@ -222,24 +257,10 @@ architecture arch of mini_risc is
             when others => PreImm <= Inst(19 downto 8);
         end case;
     end process;
-
-    display_1 <= display(0);
-    display_2 <= display(1);
-    display_3 <= display(2);
-    display_4 <= display(3);
-    display_5 <= display(4);
-    display_6 <= display(5);
-
     PCSrc(0) <= (PCSrcCtrl(0) and ALU_zero) or (PCSrcCtrl(0) and PCSrcCtrl(1));
     PCSrc(1) <= PCSrcCtrl(1);
-
-	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, BranchIncr, EPC, PCSrc, ProbablePC);
-	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
-	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
-	u_epc : registrador port map(ProbablePC, '1', clk, rst, EPC);
-	u_pc4 : somador port map(PC, X"004", PC4);
-    u_memi : memi port map(clk, rst, PC, Inst);
-    u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), Inst(31 downto 26), WriteBack, R1_data, R2_data, clk, RegWrite);
+    RD <= Inst(31 downto 26);
+    u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), RD, WriteBack, R1_data, R2_data, clk, RegWrite);
     u_shift : deslocador port map(BranchImm, "00", "01", BranchIncr);
     u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
     u_imm_gen : extensor port map(PreImm, Imm);
@@ -248,9 +269,28 @@ architecture arch of mini_risc is
     ALU_A <= R1_data;
     u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
     ALU_zero <= AluResult(0);
+
+    -- DX-MW pipeline registers
+    -- -- datapath signals
+    u_dxmw_aluresult : registrador generic map (largura_dado => 32) port map(AluResult, '1', clk, rst, AluResult_MW);
+    u_dxmw_r2data : registrador generic map (largura_dado => 32) port map(R2_data, '1', clk, rst, R2_data_MW);
+    u_dxmw_rd : registrador generic map (largura_dado => 6) port map(RD, '1', clk, rst, RD_MW);
+    -- -- control signals
+    u_dxmw_regwrite : registrador1b generic map (largura_dado => 1) port map(RegWrite_DX, '1', clk, rst, RegWrite_MW);
+    u_dxmw_memwrite : registrador1b generic map (largura_dado => 1) port map(MemWrite_DX, '1', clk, rst, MemWrite_MW);
+    u_dxmw_memtoreg : registrador1b generic map (largura_dado => 1) port map(MemToReg_DX, '1', clk, rst, MemToReg_MW);
+
+    -- Memory Read/Write and Writeback Stage (MW)
     u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut, mem_interface);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);
 
+    -- Output interface
+    display_1 <= display(0);
+    display_2 <= display(1);
+    display_3 <= display(2);
+    display_4 <= display(3);
+    display_5 <= display(4);
+    display_6 <= display(5);
     leds <= mem_interface(0)(9 downto 0);
     gen_display: 
     for i in 0 to 5 generate
