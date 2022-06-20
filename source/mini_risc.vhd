@@ -32,7 +32,7 @@ architecture arch of mini_risc is
 
 	-- control signals (will be ports of the control unit)
     signal AluSrc, AluSrc_DX : std_logic;
-	signal RegWrite, MemWrite, MemRead, MemToReg : std_logic;
+	signal RegWrite, MemWrite, MemToReg : std_logic;
 	signal RegWrite_DX, MemWrite_DX, MemToReg_DX : std_logic;
     signal RegWrite_MW, MemWrite_MW, MemToReg_MW : std_logic;
 
@@ -50,7 +50,7 @@ architecture arch of mini_risc is
 	signal Control : std_logic_vector(10 downto 0);
 	signal Inst, Inst_DX : std_logic_vector(31 downto 0);
 
-	signal BranchImm, PreImm : std_logic_vector(11 downto 0);
+	signal PreImm : std_logic_vector(11 downto 0);
 	signal Imm : std_logic_vector(31 downto 0);
 
     signal RD, RD_MW : std_logic_vector(5 downto 0);
@@ -224,7 +224,6 @@ architecture arch of mini_risc is
 	MemWrite    <= Control (5);
 	MemToReg    <= Control (4);
 	AluOp       <= Control (3 downto 0);
-    BranchImm   <= Inst(31 downto 26) & Inst(13 downto 8);
     IntCtrl     <= '0';
 
 
@@ -250,24 +249,24 @@ architecture arch of mini_risc is
     u_ifdx_memtoreg : registrador1b generic map (largura_dado => 1) port map(MemToReg, '1', clk, rst, MemToReg_DX);
 
     -- Instruction Decode and Execution Stage (DX)
-    process (BrokenImm, PreImm, Inst)
+    process (BrokenImm_DX, PreImm, Inst_DX)
     begin
-        case BrokenImm is
-            when '1' => PreImm <= Inst(31 downto 26) & Inst(13 downto 8);
-            when others => PreImm <= Inst(19 downto 8);
+        case BrokenImm_DX is
+            when '1' => PreImm <= Inst_DX(31 downto 26) & Inst_DX(13 downto 8);
+            when others => PreImm <= Inst_DX(19 downto 8);
         end case;
     end process;
-    PCSrc(0) <= (PCSrcCtrl(0) and ALU_zero) or (PCSrcCtrl(0) and PCSrcCtrl(1));
-    PCSrc(1) <= PCSrcCtrl(1);
-    RD <= Inst(31 downto 26);
-    u_reg_bank : banco_registradores port map(Inst(25 downto 20), Inst(19 downto 14), RD, WriteBack, R1_data, R2_data, clk, RegWrite);
-    u_shift : deslocador port map(BranchImm, "00", "01", BranchIncr);
-    u_branch_add : somador port map(PC, BranchIncr, BranchAddr);
+    PCSrc(0) <= (PCSrcCtrl_DX(0) and ALU_zero) or (PCSrcCtrl_DX(0) and PCSrcCtrl_DX(1));
+    PCSrc(1) <= PCSrcCtrl_DX(1);
+    RD <= Inst_DX(31 downto 26);
+    u_reg_bank : banco_registradores port map(Inst_DX(25 downto 20), Inst_DX(19 downto 14), RD_MW, WriteBack, R1_data, R2_data, clk, RegWrite_MW);
+    u_shift : deslocador port map(PreImm, "00", "01", BranchIncr);
+    u_branch_add : somador port map(PC_DX, BranchIncr, BranchAddr);
     u_imm_gen : extensor port map(PreImm, Imm);
-    u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc, ALU_B);
+    u_mux_alu : mux21 generic map (largura_dado => 32) port map(R2_data, Imm, AluSrc_DX, ALU_B);
 
     ALU_A <= R1_data;
-    u_alu : ula port map(ALU_A, ALU_B, AluOp, AluResult);
+    u_alu : ula port map(ALU_A, ALU_B, AluOp_DX, AluResult);
     ALU_zero <= AluResult(0);
 
     -- DX-MW pipeline registers
@@ -281,8 +280,8 @@ architecture arch of mini_risc is
     u_dxmw_memtoreg : registrador1b generic map (largura_dado => 1) port map(MemToReg_DX, '1', clk, rst, MemToReg_MW);
 
     -- Memory Read/Write and Writeback Stage (MW)
-    u_mem : memd port map(clk, MemWrite, '1', R2_data, AluResult(11 downto 0), MemOut, mem_interface);
-    u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult, MemToReg, WriteBack);
+    u_mem : memd port map(clk, MemWrite_MW, '1', R2_data_MW, AluResult_MW(11 downto 0), MemOut, mem_interface);
+    u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult_MW, MemToReg_MW, WriteBack);
 
     -- Output interface
     display_1 <= display(0);
