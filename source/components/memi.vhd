@@ -1,7 +1,7 @@
 -- Universidade Federal de Minas Gerais
 -- Escola de Engenharia
 -- Departamento de Engenharia Eletronica
--- Autoria: Professor Ricardo de Oliveira Duarte
+-- Autoria: Professor Ricardo de Oliveira Duarte e Guilherme Gomes
 -- Memória de Programas ou Memória de Instruções de tamanho genérico
 library ieee;
 use ieee.std_logic_1164.all;
@@ -30,11 +30,15 @@ begin
 	begin
         if (reset = '1') then
             rom <= (
-                0      => B"00101000000000000000000100000001",
-                1      => B"00101100000000000000001100000001",
-                2      => B"00110000101000101100000000000000",
-                3      => B"00000000000000110000010010000100",
-                4      => B"00110100000000000000010010000010",
+                0      => B"00001000000000000000001000000001",
+                1      => B"00001100000000000000111100000001",
+                2      => B"00000100000000000000000000000001",
+                3      => B"00000000001000000100000010000100",
+                4      => B"11111100000100001111100010010101",
+                5      => B"00000000000000000000000000000000",
+                6      => B"00000100000100000000000100000001",
+                7      => B"00000000000000000000110010010110",
+                8      => B"00000000000000000000000000000000",
                 others => B"00000000000000000000000000000000"  -- exemplo de uma instrução qualquer de 06 bits (4 símbos em hexadecimal)
                 );
         else
