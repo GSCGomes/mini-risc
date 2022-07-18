@@ -17,8 +17,9 @@ entity unidade_de_controle_ciclo_unico is
         ULA_CTRL_WIDTH    : natural := 4
     );
     port (
-        instrucao : in std_logic_vector(INSTR_WIDTH - 1 downto 0);       -- instrução
-        controle  : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0) -- controle da via
+        instrucao       : in std_logic_vector(INSTR_WIDTH - 1 downto 0);       -- instrução
+        InterCtrl_flag: : in std_logic; -- flag interruption
+        controle        : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0) -- controle da via
     );
 end unidade_de_controle_ciclo_unico;
 
@@ -29,6 +30,8 @@ architecture beh of unidade_de_controle_ciclo_unico is
     signal func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
     signal sum_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
     signal sub_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    signal int_mask     : std_logic_vector (3 downto 0);--mask for allowing interruption to happen
+    signal int_in_course: : std_logic; flag to indicate an interruption is happening; 
 
     -- using generic size for the 'Choose' signal on a switch case yields error on ModelSim-Altera
     -- signal opcode   : std_logic_vector (OPCODE_WIDTH - 1 downto 0);  -- opcode
@@ -41,7 +44,27 @@ begin
     opcode <= inst_aux (OPCODE_WIDTH - 1 downto 0);
     func <= inst_aux (ULA_CTRL_WIDTH + OPCODE_WIDTH - 1 downto OPCODE_WIDTH);
 
-    process (opcode, func, sum_func)
+
+
+    process (opcode, func, sum_func, InterCtrl_flag)
+
+
+    -- interruption treatment 
+
+    if (int_in_course = 0) begin -- if no interruption routine in course alows for new interruption
+        int_mask <= "1111";
+    else 
+        int_mask <= "0000";
+    end if;
+
+    if (InterCtrl_flag) begin -- interruption starts, blocks new interruptions
+        int_in_course <= '1'; 
+    end if;
+
+    if (opcode = "0111") begin -- ecall indicates the end of an interruption subroutine
+        int_in_course <= '0';
+    end if;
+
     begin
         case opcode is
                 -- Type-R	

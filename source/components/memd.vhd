@@ -17,11 +17,15 @@ entity memd is
     );
     port (
         clk                 : in std_logic;
+        rst                 : in std_logic;
         mem_write, mem_read : in std_logic; --sinais do controlador
         write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
         adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
         read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
-        interface           : out interface_t
+        interface           : out interface_t;
+
+        p_adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0); -- periferic access to data memory
+        p_read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0) -- periferic access to data memory
     );
 end memd;
 

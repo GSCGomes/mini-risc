@@ -24,7 +24,20 @@ entity mini_risc is
         display_3 : out std_logic_vector(6 downto 0);
         display_4 : out std_logic_vector(6 downto 0);
         display_5 : out std_logic_vector(6 downto 0);
-        display_6 : out std_logic_vector(6 downto 0)
+        display_6 : out std_logic_vector(6 downto 0);
+
+		InterCtrl       : in std_ulogic;   --# Defines Interrupt Mux Origin
+		Periferic_addr  : in std_ulogic_vector(4 downto 0); --# Address for periferic 
+		IntMask 		: out std_ulogic_vector(4 downto 0); --# Maks for enable or disable interruptions
+
+		-- GPIO ports
+		GPIO_we_i     : out  std_logic;
+		GPIO_data_i   : out  std_ulogic_vector(31 downto 0); -- registradores da cpu que serão escritos e lidos pela GPIO
+		GPIO_addr_i   : out  std_ulogic_vector( 0 downto 0);
+		GPIO_data_o   : in   std_ulogic_vector(31 downto 0)
+		--
+
+
 	);
 end mini_risc;
 
@@ -39,10 +52,6 @@ architecture arch of mini_risc is
 	signal AluOp, AluOp_DX : std_logic_vector(3 downto 0);
 	signal PCSrc, PCSrcCtrl, PCSrcCtrl_DX : std_logic_vector(1 downto 0);
     signal BrokenImm, BrokenImm_DX : std_logic;
-
-	-- interruption signals (will be ports of the int. controller)
-	signal IntCtrl : std_logic;
-	signal IntAddr : std_logic_vector(11 downto 0);
 
 	-- miscellaneous relevant signals
 	signal PC, PC_DX, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
@@ -188,7 +197,10 @@ architecture arch of mini_risc is
 			  write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
 			  adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
 			  read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
-              interface           : out interface_t
+              interface           : out interface_t;
+
+			  p_adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0); -- periferic access to data memory
+			  p_read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0) -- periferic access to data memory
 		 );
 	end component;
 
@@ -213,10 +225,31 @@ architecture arch of mini_risc is
         );
     end component;
 
+	component memp is
+		generic (
+			INSTR_WIDTH   : natural; -- tamanho da InstrucaoAddr em numero de bits
+			MI_ADDR_WIDTH : natural  -- tamanho do PerifericAddr da memoria de instrucoes em numero de bits
+		);
+		port (
+			clk       : in std_logic;
+			reset     : in std_logic;
+			PerifericAddr  : in std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
+			InstrucaoAddr : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
+		);
+	end component memp;
+
 	begin
 
-	u_controler : unidade_de_controle_ciclo_unico port map(Inst, Control);
+	u_controler : unidade_de_controle_ciclo_unico port map(Inst, InterCtrl, Control);
 
+	-- Interruption ctl interface
+
+	-- GPIO_data_o <= MemGpioOut; -- When interruption flag for gpio is setted a load word must medone to load the new output for gpio
+	GPIO_we_i    <= '1';
+	GPIO_addr_i  <= "1";
+	u_mem_perif : memp port map(clk, rst, Periferic_addr, IntAddr); --perific memory
+	
+	IntMask 	<= Control (14 downto 11);
 	BrokenImm   <= Control (10);
 	PCSrcCtrl   <= Control (9 downto 8);
 	RegWrite    <= Control (7);
@@ -224,14 +257,14 @@ architecture arch of mini_risc is
 	MemWrite    <= Control (5);
 	MemToReg    <= Control (4);
 	AluOp       <= Control (3 downto 0);
-    IntCtrl     <= '0';
+    
 
 
     -- Instruction Fetch Stage (IF)
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, BranchIncr, EPC, PCSrc, ProbablePC);
 	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
 	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
-	u_epc : registrador port map(ProbablePC, '1', clk, rst, EPC);
+	u_epc : registrador port map(ProbablePC, epcEn, clk, rst, EPC);
 	u_pc4 : somador port map(PC, X"004", PC4);
     u_memi : memi port map(clk, rst, PC, Inst);
 
@@ -240,13 +273,13 @@ architecture arch of mini_risc is
     u_ifdx_pc : registrador generic map (largura_dado => 12) port map(PC, '1', clk, rst, PC_DX);
     u_ifdx_inst : registrador generic map (largura_dado => 32) port map(Inst, '1', clk, rst, Inst_DX);
     -- -- control signals
-    u_ifdx_pcsrcctrl : registrador generic map (largura_dado => 2) port map(PCSrcCtrl, '1', clk, rst, PCSrcCtrl_DX);
-    u_ifdx_alusrc : registrador1b generic map (largura_dado => 1) port map(AluSrc, '1', clk, rst, AluSrc_DX);
-    u_ifdx_aluop : registrador generic map (largura_dado => 4) port map(AluOp, '1', clk, rst, AluOp_DX);
+    u_ifdx_pcsrcctrl : registrador   generic map (largura_dado => 2) port map(PCSrcCtrl, '1', clk, rst, PCSrcCtrl_DX);
+    u_ifdx_alusrc    : registrador1b generic map (largura_dado => 1) port map(AluSrc, '1', clk, rst, AluSrc_DX);
+    u_ifdx_aluop     : registrador   generic map (largura_dado => 4) port map(AluOp, '1', clk, rst, AluOp_DX);
     u_ifdx_brokenimm : registrador1b generic map (largura_dado => 1) port map(BrokenImm, '1', clk, rst, BrokenImm_DX);
-    u_ifdx_regwrite : registrador1b generic map (largura_dado => 1) port map(RegWrite, '1', clk, rst, RegWrite_DX);
-    u_ifdx_memwrite : registrador1b generic map (largura_dado => 1) port map(MemWrite, '1', clk, rst, MemWrite_DX);
-    u_ifdx_memtoreg : registrador1b generic map (largura_dado => 1) port map(MemToReg, '1', clk, rst, MemToReg_DX);
+    u_ifdx_regwrite  : registrador1b generic map (largura_dado => 1) port map(RegWrite, '1', clk, rst, RegWrite_DX);
+    u_ifdx_memwrite  : registrador1b generic map (largura_dado => 1) port map(MemWrite, '1', clk, rst, MemWrite_DX);
+    u_ifdx_memtoreg  : registrador1b generic map (largura_dado => 1) port map(MemToReg, '1', clk, rst, MemToReg_DX);
 
     -- Instruction Decode and Execution Stage (DX)
     process (BrokenImm_DX, PreImm, Inst_DX)
@@ -280,7 +313,7 @@ architecture arch of mini_risc is
     u_dxmw_memtoreg : registrador1b generic map (largura_dado => 1) port map(MemToReg_DX, '1', clk, rst, MemToReg_MW);
 
     -- Memory Read/Write and Writeback Stage (MW)
-    u_mem : memd port map(clk, MemWrite_MW, '1', R2_data_MW, AluResult_MW(11 downto 0), MemOut, mem_interface);
+    u_mem : memd port map(clk, MemWrite_MW, '1', R2_data_MW, AluResult_MW(11 downto 0), MemOut, mem_interface, "0", GPIO_data_i);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult_MW, MemToReg_MW, WriteBack);
 
     -- Output interface
@@ -295,5 +328,6 @@ architecture arch of mini_risc is
     for i in 0 to 5 generate
         u_seven_seg : seven_seg_decoder port map(mem_interface(i+1)(3 downto 0), display(i));
     end generate gen_display;
+
 
 end arch;
