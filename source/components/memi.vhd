@@ -21,7 +21,8 @@ entity memi is
 end entity;
 
 architecture comportamental of memi is
-	type rom_type is array (0 to 2 ** MI_ADDR_WIDTH - 1) of std_logic_vector(INSTR_WIDTH - 1 downto 0);
+	-- type rom_type is array (0 to 2 ** MI_ADDR_WIDTH - 1) of std_logic_vector(INSTR_WIDTH - 1 downto 0);
+	type rom_type is array (0 to 63) of std_logic_vector(INSTR_WIDTH - 1 downto 0);
 	signal rom : rom_type;
     signal EnderecoDeslocado : std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
 begin
@@ -34,7 +35,7 @@ begin
                 1      => B"00001100000000000000111100000001",
                 2      => B"00000100000000000000000000000001",
                 3      => B"00000000001000000100000010000100",
-                4      => B"11111100000100001111100010010101",
+                4      => B"11111100000100001111010010010101",
                 5      => B"00000000000000000000000000000000",
                 6      => B"00000100000100000000000100000001",
                 7      => B"00000000000000000000110010010110",
