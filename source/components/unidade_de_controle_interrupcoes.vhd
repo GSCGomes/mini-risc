@@ -16,8 +16,8 @@ entity interrupt_ctl is
     Pending     : out std_ulogic_vector; --# Set bits indicate which interrupts are pending
     Current     : out std_ulogic_vector; --# Single set bit for the active interrupt
 
-    InterCtrl       : out std_ulogic   --# Defines Interrupt Mux Origin
-    Periferic_addr  : out std_ulogic_vector(4 downto 0); --# Address for periferic 
+    InterCtrl       : out std_ulogic;   --# Defines Interrupt Mux Origin
+    Periferic_addr  : out std_ulogic_vector(4 downto 0) --# Address for periferic 
 
   );
 end entity;
@@ -129,7 +129,7 @@ begin
     end if;
   end process;
 
-  Periferic_addr <= perifericAddr
+  Periferic_addr <= perifericAddr;
   Current <= current_loc;
   Pending <= pending_loc;
 end architecture;

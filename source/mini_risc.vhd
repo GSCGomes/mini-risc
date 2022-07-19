@@ -20,13 +20,15 @@ entity mini_risc is
 		clk_system : in std_logic;
 		rst : in std_logic;
         clk_sel : in std_logic;
-        leds : out std_logic_vector(9 downto 0);
-        display_1 : out std_logic_vector(6 downto 0);
-        display_2 : out std_logic_vector(6 downto 0);
-        display_3 : out std_logic_vector(6 downto 0);
-        display_4 : out std_logic_vector(6 downto 0);
-        display_5 : out std_logic_vector(6 downto 0);
-        display_6 : out std_logic_vector(6 downto 0);
+
+        -- interface for FPGA testing
+        -- leds : out std_logic_vector(9 downto 0);
+        -- display_1 : out std_logic_vector(6 downto 0);
+        -- display_2 : out std_logic_vector(6 downto 0);
+        -- display_3 : out std_logic_vector(6 downto 0);
+        -- display_4 : out std_logic_vector(6 downto 0);
+        -- display_5 : out std_logic_vector(6 downto 0);
+        -- display_6 : out std_logic_vector(6 downto 0);
 
 		InterCtrl       : in std_ulogic;   --# Defines Interrupt Mux Origin
 		Periferic_addr  : in std_ulogic_vector(4 downto 0); --# Address for periferic 
@@ -334,20 +336,20 @@ architecture arch of mini_risc is
     u_mem : memd port map(clk, MemWrite_MW, '1', R2_data_MW, AluResult_MW(11 downto 0), MemOut, mem_interface, "0", GPIO_data_i);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult_MW, MemToReg_MW, WriteBack);
 
-    -- Output interface
-    display_1 <= display(5);
-    display_2 <= display(4);
-    display_3 <= display(3);
-    display_4 <= display(2);
-    display_5 <= display(1);
-    display_6 <= display(0);
-    leds(9 downto 0) <= Control(9 downto 0);
-    gen_display: 
-    for i in 0 to 3 generate
-        u_seven_seg : seven_seg_decoder port map(mem_interface(i)(3 downto 0), display(i));
-    end generate gen_display;
-    u_seven_seg_pc1 : seven_seg_decoder port map(PC(7 downto 4), display(4));
-    u_seven_seg_pc2 : seven_seg_decoder port map(PC(3 downto 0), display(5));
+    -- -- Output interface
+    -- display_1 <= display(5);
+    -- display_2 <= display(4);
+    -- display_3 <= display(3);
+    -- display_4 <= display(2);
+    -- display_5 <= display(1);
+    -- display_6 <= display(0);
+    -- leds(9 downto 0) <= Control(9 downto 0);
+    -- gen_display: 
+    -- for i in 0 to 3 generate
+    --     u_seven_seg : seven_seg_decoder port map(mem_interface(i)(3 downto 0), display(i));
+    -- end generate gen_display;
+    -- u_seven_seg_pc1 : seven_seg_decoder port map(PC(7 downto 4), display(4));
+    -- u_seven_seg_pc2 : seven_seg_decoder port map(PC(3 downto 0), display(5));
 
 
 end arch;
