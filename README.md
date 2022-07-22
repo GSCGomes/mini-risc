@@ -8,7 +8,7 @@ A 32-bit processor inspired on RISCV done as a university project.
 - **Federal University of Minas Gerais (UFMG)**
 
 ## Overview
-![Datapath overview](https://raw.githubusercontent.com/GSCGomes/mini_risc/5b894a9f3df50278874b255bd77a849bcce395b7/documentation/datapath.drawio.png)
+![Datapath overview](documentation/datapath.drawio.png)
 
 ## Processor details
 
