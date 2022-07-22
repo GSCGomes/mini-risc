@@ -26,7 +26,7 @@ The processor was wrapped inside a microcontroller and attached to some peripher
 - TIMER0
 - TIMER1
 
-## Simulations
+## Simulation
 
 The design was tested by simulating using some test programs (see [testcases](testcases)) and using specific testbenches used for each component and for the whole integrated design:
 - [ALU testbench](source/tb_alu.vhd)
@@ -34,15 +34,3 @@ The design was tested by simulating using some test programs (see [testcases](te
 - [Single register testbench](source/tb_register.vhd)
 - [Processor testbench](source/tb_mini_risc.vhd)
 - [Microcontroller testbench using interruptions](source/tb_micro_controlador.vhd)
-
-Many simulations were performed. We chose to go deeper into only one of them in this description, the 4-bit counter.
-
-### Simulation and testing example -  4-bit counter
-
-One of the performed simulations was of a infinite 4-bit counter program (see [counter program](testcases/counter.md)). The goal was to count from 0 to 15 and restart at 0 while displaying all values in a 7 segment display made available on the DE10 board.
-
-This is the waveform achieved:
-![Counter waveform](https://raw.githubusercontent.com/GSCGomes/mini_risc/021ea58d4fc2d5f4f42f6403e6dd0119d61188de/testcases/counter_wave.png)
-
-And this is the result visualized in the FPGA board:  
-![Counter on FPGA](testcases/counter_fpga.gif)
