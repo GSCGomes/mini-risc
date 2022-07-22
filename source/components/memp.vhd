@@ -9,13 +9,13 @@ use ieee.numeric_std.all;
 
 entity memp is
 	generic (
-		INSTR_WIDTH   : natural; -- tamanho da InstrucaoAddro em numero de bits
-		MI_ADDR_WIDTH : natural  -- tamanho do PerifericAddr da memoria de instrucoes em numero de bits
+		INSTR_WIDTH   : natural := 32; -- tamanho da InstrucaoAddro em numero de bits
+		MI_ADDR_WIDTH : natural := 4  -- tamanho do PerifericAddr da memoria de instrucoes em numero de bits
 	);
 	port (
 		clk       : in std_logic;
 		reset     : in std_logic;
-		PerifericAddr  : in std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
+		PerifericAddr  : in std_logic_vector(3 downto 0);
 		InstrucaoAddr : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
 	);
 end entity;

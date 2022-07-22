@@ -11,27 +11,27 @@ entity interrupt_ctl is
     Reset : in std_ulogic; --# Asynchronous reset
 
     --# {{control|}}
-    Int_mask    : in std_ulogic_vector;  --# Set bits correspond to active interrupts
-    Int_request : in std_ulogic_vector;  --# Controls used to activate new interrupts
-    Pending     : out std_ulogic_vector; --# Set bits indicate which interrupts are pending
-    Current     : out std_ulogic_vector; --# Single set bit for the active interrupt
+    Int_mask    : in  std_logic_vector(3 downto 0);  --# Set bits correspond to active interrupts
+    Int_request : in  std_logic_vector(3 downto 0);  --# Controls used to activate new interrupts
+    Pending     : out std_logic_vector(3 downto 0); --# Set bits indicate which interrupts are pending
+    Current     : out std_logic_vector(3 downto 0); --# Single set bit for the active interrupt
 
-    InterCtrl       : out std_ulogic;   --# Defines Interrupt Mux Origin
-    Periferic_addr  : out std_ulogic_vector(4 downto 0) --# Address for periferic 
+    InterCtrl       : out std_logic;   --# Defines Interrupt Mux Origin
+    Periferic_addr  : out std_logic_vector(3 downto 0) --# Address for periferic 
 
   );
 end entity;
 
 architecture rtl of interrupt_ctl is
-  signal pending_loc, current_loc : std_ulogic_vector(Int_request'range);
+  signal pending_loc, current_loc : std_logic_vector(Int_request'range);
   signal interrupt_loc : std_ulogic;
-  signal perifericAddr : std_ulogic_vector(4 downto 0);
+  signal perifericAddr : std_logic_vector(3 downto 0);
 
   -- Priority decoder
   -- Input is a vector of all pending interrupts. Result is a vector with just the
   -- highest priority interrupt bit set.
-  function priority_decode(pending : std_ulogic_vector) return std_ulogic_vector is
-    variable result : std_ulogic_vector(pending'range);
+  function priority_decode(pending : std_logic_vector) return std_logic_vector is
+    variable result : std_logic_vector(pending'range);
     variable or_chain : std_ulogic;
   begin
 
@@ -54,7 +54,7 @@ architecture rtl of interrupt_ctl is
   end function;
 
   -- OR-reduce for compatability with VHDL-93
-  function or_reduce(vec: std_ulogic_vector) return std_ulogic is
+  function or_reduce(vec: std_logic_vector) return std_ulogic is
     variable or_chain : std_ulogic;
   begin
     or_chain := '0';
@@ -68,7 +68,7 @@ architecture rtl of interrupt_ctl is
 begin
 
   ic: process(Clock, Reset) is
-    variable clear_int_n, pending_v, current_v : std_ulogic_vector(pending'range);
+    variable clear_int_n, pending_v, current_v : std_logic_vector(pending'range);
     variable interrupt_v : std_ulogic;
   begin
     assert Int_request'length >= 2
@@ -90,8 +90,6 @@ begin
       current_loc <= (others => '0');
       interrupt_loc <= '0';
     elsif rising_edge(Clock) then
-
-      
 
       -- Keep track of pending interrupts while disabling inactive interrupts
       -- and clearing acknowledged interrupts.

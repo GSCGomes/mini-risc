@@ -5,8 +5,22 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+
+package interface_p is
+    type interface_t is array (0 to 6) of std_logic_vector(31 downto 0);
+end package interface_p;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use ieee.std_logic_misc.all;
 use work.interface_p.all;
+use ieee.numeric_std.all;
+
+-- library ieee;
+-- use ieee.std_logic_1164.all;
+-- use ieee.numeric_std.all;
+-- use ieee.std_logic_misc.all;
+-- use work.interface_p.all;
 
 
 entity memd is

@@ -2,12 +2,12 @@
 -- Escola de Engenharia
 -- Departamento de Engenharia Eletrônica
 -- Autoria: Guilherme Gomes, Felipe Freitas, Melissa Monni
-library ieee;
-use ieee.std_logic_1164.all;
+-- library ieee;
+-- use ieee.std_logic_1164.all;
 
-package interface_p is
-    type interface_t is array (0 to 6) of std_logic_vector(31 downto 0);
-end package interface_p;
+-- package interface_p is
+--     type interface_t is array (0 to 6) of std_logic_vector(31 downto 0);
+-- end package interface_p;
 
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -18,8 +18,8 @@ entity mini_risc is
 	port (
 		clk_manual : in std_logic;
 		clk_system : in std_logic;
-		rst : in std_logic;
-        clk_sel : in std_logic;
+		rst        : in std_logic;
+        clk_sel    : in std_logic;
 
         -- interface for FPGA testing
         -- leds : out std_logic_vector(9 downto 0);
@@ -30,15 +30,15 @@ entity mini_risc is
         -- display_5 : out std_logic_vector(6 downto 0);
         -- display_6 : out std_logic_vector(6 downto 0);
 
-		InterCtrl       : in std_ulogic;   --# Defines Interrupt Mux Origin
-		Periferic_addr  : in std_ulogic_vector(4 downto 0); --# Address for periferic 
-		IntMask 		: out std_ulogic_vector(4 downto 0); --# Maks for enable or disable interruptions
+		InterCtrl       : in std_logic;   --# Defines Interrupt Mux Origin
+		Periferic_addr  : in std_logic_vector(3 downto 0); --# Address for periferic 
+		IntMask 		: out std_logic_vector(3 downto 0); --# Maks for enable or disable interruptions
 
 		-- GPIO ports
 		GPIO_we_i     : out  std_logic;
-		GPIO_data_i   : out  std_ulogic_vector(31 downto 0); -- registradores da cpu que serão escritos e lidos pela GPIO
-		GPIO_addr_i   : out  std_ulogic_vector( 0 downto 0);
-		GPIO_data_o   : in   std_ulogic_vector(31 downto 0)
+		GPIO_data_i   : out  std_logic_vector(31 downto 0); -- registradores da cpu que serão escritos e lidos pela GPIO
+		GPIO_addr_i   : out  std_logic_vector( 0 downto 0);
+		GPIO_data_o   : in   std_logic_vector(31 downto 0)
 		--
 
 
@@ -60,8 +60,8 @@ architecture arch of mini_risc is
 	-- miscellaneous relevant signals
 	signal PC, PC_DX, PC4, NextPC, ProbablePC, EPC, BranchAddr, BranchIncr : std_logic_vector (11 downto 0);
 
-	signal Control : std_logic_vector(10 downto 0);
-	signal Inst, Inst_DX : std_logic_vector(31 downto 0);
+	signal Control : std_logic_vector(11 downto 0);
+	signal Inst, Inst_DX, IntAddr: std_logic_vector(31 downto 0);
 
 	signal PreImm : std_logic_vector(11 downto 0);
 	signal Imm : std_logic_vector(31 downto 0);
@@ -69,15 +69,17 @@ architecture arch of mini_risc is
     signal RD, RD_MW : std_logic_vector(5 downto 0);
 
 	signal R1_data, R2_data, R2_data_MW, MemOut, WriteBack: std_logic_vector(31 downto 0);
-    signal ALU_zero : std_logic;
+    signal ALU_zero, epcEn : std_logic;
 	signal ALU_A, ALU_B, AluResult, AluResult_MW : std_logic_vector(31 downto 0);
 
     signal clk, divided_clk : std_logic;
 
+
+
     -- output interface
     signal mem_interface : interface_t;
-    type display_t is array (0 to 5) of std_logic_vector(6 downto 0);
-    signal display : display_t;
+    -- type display_t is array (0 to 5) of std_logic_vector(6 downto 0);
+    -- signal display : display_t;
 
 	component mux21 is
 		 generic (
@@ -139,6 +141,20 @@ architecture arch of mini_risc is
 			Instrucao : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
 		);
 	end component;
+
+	component memp is
+		generic (
+			INSTR_WIDTH   : natural := 32; -- tamanho da InstrucaoAddro em numero de bits
+			MI_ADDR_WIDTH : natural := 4  -- tamanho do PerifericAddr da memoria de instrucoes em numero de bits
+		);
+		port (
+			clk       : in std_logic;
+			reset     : in std_logic;
+			PerifericAddr  : in std_logic_vector(3 downto 0);
+			InstrucaoAddr : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
+		);
+	end component;
+
 	component banco_registradores is
 		 generic (
 			  largura_dado : natural := 32;
@@ -198,17 +214,19 @@ architecture arch of mini_risc is
 			  MD_ADDR_WIDTH   : natural := 12 -- tamanho do endereco da memoria de dados em bits
 		 );
 		 port (
-			  clk                 : in std_logic;
-			  mem_write, mem_read : in std_logic; --sinais do controlador
-			  write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
-			  adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
-			  read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
-              interface           : out interface_t;
-
-			  p_adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0); -- periferic access to data memory
-			  p_read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0) -- periferic access to data memory
+			clk                 : in std_logic;
+			rst                 : in std_logic;
+			mem_write, mem_read : in std_logic; --sinais do controlador
+			write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
+			adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
+			read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
+			interface           : out interface_t;
+	
+			p_adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0); -- periferic access to data memory
+			p_read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0) -- periferic access to data memory
 		 );
 	end component;
+
 
 	-- unidade de controle
 	component unidade_de_controle_ciclo_unico is
@@ -219,8 +237,11 @@ architecture arch of mini_risc is
 			ULA_CTRL_WIDTH    : natural := 4
 		);
 		port (
-			instrucao : in std_logic_vector(INSTR_WIDTH - 1 downto 0);       -- instrução
-			controle  : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0) -- controle da via
+			instrucao       : in std_logic_vector(INSTR_WIDTH - 1 downto 0);       -- instrução
+			InterCtrl_flag  : in std_logic; -- flag interruption
+			controle        : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0); -- controle da via
+			int_mask        : out std_logic_vector(3 downto 0);
+			epcEn           : out std_logic -- Enables recording previous pc on EPC.
 		);
 	end component;
 
@@ -237,19 +258,6 @@ architecture arch of mini_risc is
          );
     end component;
 
-	component memp is
-		generic (
-			INSTR_WIDTH   : natural; -- tamanho da InstrucaoAddr em numero de bits
-			MI_ADDR_WIDTH : natural  -- tamanho do PerifericAddr da memoria de instrucoes em numero de bits
-		);
-		port (
-			clk       : in std_logic;
-			reset     : in std_logic;
-			PerifericAddr  : in std_logic_vector(MI_ADDR_WIDTH - 1 downto 0);
-			InstrucaoAddr : out std_logic_vector(INSTR_WIDTH - 1 downto 0)
-		);
-	end component memp;
-
 	begin
 
 	-- Interruption ctl interface
@@ -262,14 +270,15 @@ architecture arch of mini_risc is
         end case;
     end process;
 
-	u_controler : unidade_de_controle_ciclo_unico port map(Inst, InterCtrl, Control);
+	u_controler : unidade_de_controle_ciclo_unico port map(Inst, InterCtrl, Control, IntMask, epcEn);
 
 	-- GPIO_data_o <= MemGpioOut; -- When interruption flag for gpio is setted a load word must medone to load the new output for gpio
-	GPIO_we_i    <= '1';
-	GPIO_addr_i  <= "1";
+	
+	-- GPIO_we_i    <= '1';
+	-- GPIO_addr_i  <= "1";
 	u_mem_perif : memp port map(clk, rst, Periferic_addr, IntAddr); --perific memory
 	
-	IntMask 	<= Control (14 downto 11);
+		
 	BrokenImm   <= Control (10);
 	PCSrcCtrl   <= Control (9 downto 8);
 	RegWrite    <= Control (7);
@@ -282,7 +291,7 @@ architecture arch of mini_risc is
 
     -- Instruction Fetch Stage (IF)
 	u_mux_pc_1 : mux41 port map(PC4, BranchAddr, BranchIncr, EPC, PCSrc, ProbablePC);
-	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, IntCtrl, NextPC);
+	u_mux_pc_2 : mux21 generic map (largura_dado => 12) port map(ProbablePC, IntAddr, InterCtrl, NextPC);
 	u_pc : registrador port map(NextPC, '1', clk, rst, PC);
 	u_epc : registrador port map(ProbablePC, epcEn, clk, rst, EPC);
 	u_pc4 : somador port map(PC, X"004", PC4);
@@ -333,7 +342,7 @@ architecture arch of mini_risc is
     u_dxmw_memtoreg : registrador1b port map(MemToReg_DX, '1', clk, rst, MemToReg_MW);
 
     -- Memory Read/Write and Writeback Stage (MW)
-    u_mem : memd port map(clk, MemWrite_MW, '1', R2_data_MW, AluResult_MW(11 downto 0), MemOut, mem_interface, "0", GPIO_data_i);
+    u_mem : memd port map(clk, rst, MemWrite_MW, '1', R2_data_MW, AluResult_MW(11 downto 0), MemOut, mem_interface, "0", GPIO_data_i);
     u_mux_wb : mux21 generic map (largura_dado => 32) port map(MemOut, AluResult_MW, MemToReg_MW, WriteBack);
 
     -- -- Output interface

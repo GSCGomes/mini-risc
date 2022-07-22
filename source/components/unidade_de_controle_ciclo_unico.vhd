@@ -19,18 +19,20 @@ entity unidade_de_controle_ciclo_unico is
     port (
         instrucao       : in std_logic_vector(INSTR_WIDTH - 1 downto 0);       -- instrução
         InterCtrl_flag  : in std_logic; -- flag interruption
-        controle        : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0) -- controle da via
+        controle        : out std_logic_vector(DP_CTRL_BUS_WIDTH - 1 downto 0); -- controle da via
+        int_mask        : out std_logic_vector(3 downto 0);
+        epcEn           : out std_logic -- Enables recording previous pc on EPC.
     );
 end unidade_de_controle_ciclo_unico;
 
 architecture beh of unidade_de_controle_ciclo_unico is
 
-    signal inst_aux : std_logic_vector (INSTR_WIDTH - 1 downto 0); -- instrucao
-    signal ctrl_aux : std_logic_vector (DP_CTRL_BUS_WIDTH - 1 downto 0);  -- controle
-    signal func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
-    signal sum_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
-    signal sub_func     : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
-    signal int_mask     : std_logic_vector (3 downto 0); --mask for allowing interruption to happen
+    signal inst_aux      : std_logic_vector (INSTR_WIDTH - 1 downto 0); -- instrucao
+    signal ctrl_aux      : std_logic_vector (DP_CTRL_BUS_WIDTH - 1 downto 0);  -- controle
+    signal func          : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    signal sum_func      : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    signal sub_func      : std_logic_vector (ULA_CTRL_WIDTH - 1 downto 0);  -- unique code for Type R and I oprations
+    -- signal int_mask     : std_logic_vector (3 downto 0); --mask for allowing interruption to happen
     signal int_in_course : std_logic; -- flag to indicate an interruption is happening; 
 
     -- using generic size for the 'Choose' signal on a switch case yields error on ModelSim-Altera
@@ -44,19 +46,17 @@ begin
     opcode <= inst_aux (OPCODE_WIDTH - 1 downto 0);
     func <= inst_aux (ULA_CTRL_WIDTH + OPCODE_WIDTH - 1 downto OPCODE_WIDTH);
 
-
-
-    process (opcode, func, sum_func, InterCtrl_flag) begin
+    process (opcode, func, sum_func) begin
 
         -- interruption treatment 
 
-        if (int_in_course = 0) then -- if no interruption routine in course alows for new interruption
+        if (int_in_course = '0') then -- if no interruption routine in course alows for new interruption
             int_mask <= "1111";
         else 
             int_mask <= "0000";
         end if;
 
-        if (InterCtrl_flag) then -- interruption starts, blocks new interruptions
+        if (InterCtrl_flag = '1') then -- interruption starts, blocks new interruptions
             int_in_course <= '1'; 
         end if;
 
@@ -94,6 +94,7 @@ begin
         end case;
     end process;
 
+    epcEn <= not int_in_course;
     controle <= ctrl_aux;
     
 end beh;

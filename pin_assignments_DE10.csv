@@ -19,7 +19,7 @@
 # Note: The column header names should not be changed if you wish to import this .csv file into the Quartus Prime software.
 
 To,Direction,Location,I/O Bank,VREF Group,I/O Standard,Reserved,Current Strength,Slew Rate,Differential Pair,Strict Preservation
-clk_system,Input,PIN_P11,3B3_N0,3.3-V LVTTL,,,,,
+clk,Input,PIN_P11,3B3_N0,3.3-V LVTTL,,,,,
 clk_sel,Input,PIN_F15,7B7_N0,3.3-V LVTTL,,,,,
 display_1[6],Output,PIN_C17,7,B7_N0,3.3-V LVTTL,,,,,
 display_1[5],Output,PIN_D17,7,B7_N0,3.3-V LVTTL,,,,,

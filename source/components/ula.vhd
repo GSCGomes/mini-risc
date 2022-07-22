@@ -7,7 +7,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
+-- use ieee.std_logic_unsigned.all;
 
 entity ula is
     generic (
@@ -63,7 +63,7 @@ begin
             when "1011" => -- bge
                 resultado_ula <= zeros & (not less);
             when "1111" => -- Sub
-                resultado_ula <= entrada_a - entrada_b;
+                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
             when others => -- Default is add
                 resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
         end case;
