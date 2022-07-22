@@ -15,7 +15,7 @@ A 32-bit processor inspired on RISCV done as a university project.
 - Detailed information can be seen in the ![mini_risc reference card](https://github.com/GSCGomes/mini_risc/blob/5b894a9f3df50278874b255bd77a849bcce395b7/documentation/mini-risc%20reference%20sheet.pdf)
 - Implemented in VHDL using Quartus for synthesis and ModelSim-Altera for simulation. Tested in the Altera DE10 FPGA development kit.
 - 3-stage pipeline: Instruction Fetch (IF), Decode and Execution (DX), Memory Access and Register Writeback (MW) (see [pipeline description](documentation/pipeline-description.md))
-- 28 instructions available (see instruction map)
+- 28 instructions available
 - 4 kB Data memory (see [memory map](documentation/memory_map.pdf))
 - 32-bit instruction, 32-bit data word size
 - Little endian
